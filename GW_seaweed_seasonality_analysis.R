@@ -14,15 +14,16 @@ algae = read.csv("GW_seaweed_seasonality_transect_data.csv")
 
 
 ## dot-line plot (fucus)
-ggplot(algae, aes(x=distance_along_transect, y=fucus_distichus_percent.cover, 
+ggplot(algae, aes(x=distance_along_transect_m, y=fucus_distichus_percent.cover, 
                   shape=sampling_date))+
   geom_point(cex=3)+
   geom_line()+
   facet_grid(transect_id~.)
 
-## dot-line plot (ulav)
-ggplot(algae, aes(x=distance_along_transect, y=ulva_fenestrata_percent.cover, 
+## dot-line plot (ulva)
+ggplot(algae, aes(x=distance_along_transect_m, y=ulva_fenestrata_percent.cover, 
                   shape=sampling_date))+
   geom_point(cex=3)+
   geom_line()+
   facet_grid(transect_id~.)
+

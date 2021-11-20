@@ -1,4 +1,4 @@
-sampling_date,transect_id,distance_along_transect,dominant_seaweed,fucus_distichus_percent-cover,mastocarpus_sp_percent-cover,ulva_fenestrata_percent-cover,polysiphonia_sp
+sampling_date,transect_id,distance_along_transect_m,dominant_seaweed,fucus_distichus_percent-cover,mastocarpus_sp_percent-cover,ulva_fenestrata_percent-cover,polysiphonia_sp
 2021-09-05,1,0,fucus_distichus,20,5,,
 2021-09-05,1,5,no_seaweed,,,,
 2021-09-05,1,10,no_seaweed,,,,
