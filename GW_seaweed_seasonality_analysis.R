@@ -1,6 +1,7 @@
 ## load packages
 library(tidyverse)
 library(plyr)
+library(viridis)
 library(ggplot2)+theme_set(theme_bw()+
                              theme(axis.text.y = element_text(colour = "black", size = 12, face = "bold"),
                                    axis.text.x = element_text(colour = "black", face = "bold", size = 12),
@@ -17,50 +18,29 @@ setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Se
 algae = read.csv("GW_seaweed_seasonality_transect_data1.csv")
 
 
-## group the data by aquariums and sampling date
-algae_grouped = ddply(algae, c("sampling_date", "distance_along_transect_m"), 
-                           summarise,
-                           N.fd = length(fucus_distichus_percent.cover), ## sample size
-                           mean.fd = mean(fucus_distichus_percent.cover), ## mean
-                           sd.fd = sd(fucus_distichus_percent.cover)## standard deviation
-                          )%>% ## standard deviation)
-  mutate(se.fd = sd.fd/sqrt(N.fd), ## standard error
-         lci.fd = mean.fd - 1.960*(se.fd), ## lower bound of 95% confidence interval
-         uci.fd = mean.fd + 1.960*(se.fd)) ## upper bound of 95% confidence interval
- ## upper bound of 95% confidence interval
+## pivot data for analysis/graphing
+algae.wide = algae %>% pivot_longer(-c(1:4))
+
+## summarize data
+algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","name"), 
+                       summarise,
+                       N = length(value), ## sample size
+                       mean = mean(value),
+                       sd = sd(value)) %>%
+  mutate(se = sd/sqrt(N), ## standard error
+         lci = mean - 1.960*(se), ## lower bound of 95% confidence interval
+         uci = mean + 1.960*(se))
 
 
-
-## dot-line plot (fucus)
-ggplot(algae_grouped, aes(x=distance_along_transect_m, y=mean.fd, 
-                  shape=sampling_date, color=sampling_date))+
-  geom_point(cex=4)+
-  geom_line()+
-  geom_errorbar(aes(ymin=lci.fd, ymax=uci.fd), 
-                width=0.5)+
-  xlab("Distance from seawall (m)")+
-  ylab("Fucus distichus % cover")+
-  scale_color_manual(values=c("forestgreen","dodgerblue","cyan3"))
-
-## dot-line plot (ulva)
-ggplot(algae, aes(x=distance_along_transect_m, y=ulva_fenestrata_percent.cover, 
-                  shape=sampling_date))+
-  geom_point(cex=3)+
-  geom_line()+
-  facet_grid(transect_id~.)
-
-
-## dot-line plot (mastocarpus)
-ggplot(algae, aes(x=distance_along_transect_m, y=mastocarpus_sp_percent.cover, 
-                  shape=sampling_date))+
-  geom_point(cex=3)+
-  geom_line()+
-  facet_grid(transect_id~.)
-
-
-## heatmap plot (fucus)
-ggplot(algae, aes(x=distance_along_transect_m, y=fucus_distichus_percent.cover,
-                  fill=fucus_distichus_percent.cover))+
-  geom_tile()+
-  facet_grid(transect_id~.)
-
+## plot all data
+pd=position_dodge(0.1)
+ggplot(data=algae.wide.grouped, aes(x=distance_along_transect_m, y=mean, colour=name))+
+  geom_errorbar(aes(ymin=lci, ymax=uci), width=0.1, position=pd) +
+  geom_point(position=pd)+
+  geom_line(position=pd)+
+  facet_grid(transect_id~.)+
+  guides(colour=guide_legend(ncol=1))+
+  ylab("mean percent cover")+
+  xlab("distance from seawall (m)")
+  
+  
