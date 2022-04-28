@@ -22,7 +22,7 @@ algae = read.csv("GW_seaweed_seasonality_transect_data1.csv")
 algae.wide = algae %>% pivot_longer(-c(1:4))
 
 ## summarize data
-algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","name"), 
+algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","name", "sampling_date"), 
                        summarise,
                        N = length(value), ## sample size
                        mean = mean(value),
@@ -34,13 +34,14 @@ algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_
 
 ## plot all data
 pd=position_dodge(0.1)
-ggplot(data=algae.wide.grouped, aes(x=distance_along_transect_m, y=mean, colour=name))+
-  geom_errorbar(aes(ymin=lci, ymax=uci), width=0.1, position=pd) +
-  geom_point(position=pd)+
-  geom_line(position=pd)+
+ggplot(data=algae.wide.grouped, aes(x=distance_along_transect_m, y=mean, colour=name, shape=sampling_date))+
+ geom_errorbar(aes(ymin=lci, ymax=uci), width=0.1, position=pd) +
+ geom_point(position=pd, aes(cex=1))+
+ geom_line(position=pd)+
   facet_grid(transect_id~.)+
   guides(colour=guide_legend(ncol=1))+
   ylab("mean percent cover")+
-  xlab("distance from seawall (m)")
+  xlab("distance from seawall (m)")+
+  scale_shape_manual(values=c(13, 15, 16, 17, 18, 19, 20, 21))
   
   
