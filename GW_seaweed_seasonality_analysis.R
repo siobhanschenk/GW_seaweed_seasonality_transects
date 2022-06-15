@@ -19,7 +19,7 @@ algae = read.csv("GW_seaweed_seasonality_transect_data1.csv")
 
 
 ## pivot data for analysis/graphing
-algae.wide = algae %>% pivot_longer(-c(1:4))
+algae.wide = algae %>% pivot_longer(-c(1:7))
 
 ## summarize data
 algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","name", "sampling_date"), 
@@ -42,6 +42,6 @@ ggplot(data=algae.wide.grouped, aes(x=distance_along_transect_m, y=mean, colour=
   guides(colour=guide_legend(ncol=1))+
   ylab("mean percent cover")+
   xlab("distance from seawall (m)")+
-  scale_shape_manual(values=c(13, 15, 16, 17, 18, 19, 20, 21))
+  scale_shape_manual(values=c(13, 14, 15, 16, 17, 18, 19, 20, 21))
   
   
