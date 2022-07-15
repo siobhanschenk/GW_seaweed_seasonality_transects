@@ -9,13 +9,22 @@ install.packages("ggplot2")
 ## load packages
 library(tidyverse)
 library(plyr)
-library(ggplot2);theme_bw()
+library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
+                                   axis.text.y = element_text(size=12, face="bold"),
+                                   axis.title.x = element_text(size=15, face="bold"),
+                                   axis.title.y = element_text(size=15, face="bold")))
 
 ## tell R where to get the data. !!This is computer specific because it's where you downloaded the file
 setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
 
 ## read in data
 algae = read.csv("GW_seaweed_seasonality_transect_data.csv")
+
+## plot items
+pd=position_dodge(0.1)
+color.month = c("dodgerblue4","dodgerblue","deepskyblue","cyan1","plum1","mediumorchid1","mediumpurple1",
+                "purple1","purple4","magenta4","magenta2","violet","darkorchid1")
+
 
 ##### FORMAT DATA FOR ANALYSIS ####
 ## remove transects 1 and 5
@@ -70,18 +79,66 @@ brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
 
 ## heatmap of percent abundance by transect and month
 ggplot(brown, aes(x=month, y=distance_along_transect_m, fill=mean))+
-  geom_tile(color="white")+
+  geom_tile(color="grey85", size=0.3)+
   #geom_text(aes(label = mean), color = "grey50", size = 3)+
   scale_fill_continuous(
     low="white",high="goldenrod4")+
-  theme(axis.text.x = element_text(face="bold"),
-        axis.text.y = element_text(size=12, face="bold"),
-        axis.title.x = element_text(size=15, face="bold"),
-        axis.title.y = element_text(size=15, face="bold"))+
   labs(x="Sampling Month", y="Distance From Seawall (m)", fill="Mean Percent Cover")+
   facet_grid(transect_id~seaweed_id, scales="free")+
   scale_y_reverse()
 
+
+## only study Saccharina (the best one)
+saccharina = subset(brown, brown$seaweed_id=="saccharina_latissima")
+## line plot of Saccharina %cover
+ggplot(saccharina, aes(x=distance_along_transect_m, y=mean, fill=month))+
+  geom_errorbar(aes(ymin=lci, ymax=uci), width=0.1, position=pd)+
+  geom_point(position=pd, pch=21, cex=3)+
+  geom_line(position=pd, aes(color=month))+
+  facet_grid(transect_id~.)+
+  scale_fill_manual(values=color.month)+
+  scale_color_manual(values=color.month)+
+  labs(x="Distance away from seawall (m)", y="Mean % cover of Saccharina latissima +/- 95% CI")+
+  theme_bw()
+
+
+## study kelp recruitment
+baby.kelps = subset(brown, brown$seaweed_id=="laminariales_sp")
+## line plot of baby.kelps %cover
+ggplot(baby.kelps, aes(x=distance_along_transect_m, y=mean, fill=month))+
+  geom_errorbar(aes(ymin=lci, ymax=uci), width=0.1, position=pd)+
+  geom_point(position=pd, pch=21, cex=3)+
+  geom_line(position=pd, aes(color=month))+
+  facet_grid(transect_id~.)+
+  scale_fill_manual(values=color.month)+
+  scale_color_manual(values=color.month)+
+  labs(x="Distance away from seawall (m)", y="Mean % cover of baby kelps+/- 95% CI")+
+  theme_bw()
+
+
+## study all kelps together
+kelp = subset(brown, brown$seaweed_id=="laminariales_sp"|
+                brown$seaweed_id=="saccharina_latissima"|
+                brown$seaweed_id=="alaria_marginata"|
+                brown$seaweed_id=="nereocystis_luetkeana"|
+                brown$seaweed_id=="costaria_costata")
+## plot % cover of all kelps together for all months
+ggplot(kelp, aes(x=distance_along_transect_m, y=mean, fill=seaweed_id))+
+  geom_bar(position="stack", stat="identity")+
+  scale_fill_manual(values=c("coral4","darkgoldenrod4","lightgoldenrod3","peru","burlywood4"))+
+  facet_grid(transect_id~.)+
+  labs(x="Distance away from seawall (m)", y="Mean % cover of kelps (all months pooled)")+
+  theme_bw()
+
+
+## study kelps for transect 3 only
+kelp3 = subset(kelp, kelp$transect_id==3)
+## plot kelp % cover along entire transect by month
+ggplot(kelp3, aes(y=month, x=mean, fill=seaweed_id))+
+  geom_bar(position="stack", stat="identity")+
+  labs(y="Sampling month", x="Pooled mean %cover of kelps along transect 3", fill="Seaweed ID")+
+  scale_fill_manual(values=c("coral4","darkgoldenrod4","lightgoldenrod3","peru","burlywood4"))+
+  theme_bw()
 
 ##### RED SEAWEED PLOTS #####
 ## only keep brown seaweeds
@@ -90,7 +147,7 @@ red = subset(algae.wide.grouped, algae.wide.grouped$phylum=="red")
 
 ## heatmap of percent abundance by transect and month
 ggplot(red, aes(x=month, y=distance_along_transect_m, fill=mean))+
-  geom_tile(color="white")+
+  geom_tile(color="grey85", size=0.3)+
   #geom_text(aes(label = mean), color = "grey50", size = 3)+
   scale_fill_continuous(
     low="white",high="red4")+
@@ -109,7 +166,7 @@ green = subset(algae.wide.grouped, algae.wide.grouped$phylum=="green")
 
 ## heatmap of percent abundance by transect and month
 ggplot(green, aes(x=month, y=distance_along_transect_m, fill=mean))+
-  geom_tile(color="white")+
+  geom_tile(color="grey85", size=0.3)+
   #geom_text(aes(label = mean), color = "grey50", size = 3)+
   scale_fill_continuous(
     low="white",high="green4")+
