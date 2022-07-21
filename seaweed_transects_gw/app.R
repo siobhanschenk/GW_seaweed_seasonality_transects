@@ -71,8 +71,10 @@ algae.wide.grouped[is.na(algae.wide.grouped)]<-0
 algae.wide.grouped$month = factor(algae.wide.grouped$month, levels=c("1","2","3","4","5","6","7","8","9","10","11","12"))
 
 ## get seaweed species list
-speclist = as.data.frame(colnames(seaweed))
+speclist = as.data.frame(colnames(algae))
 speclist = speclist[-c(1:6),]
+
+#!# need to remove __phylum from here 
 
 ## subset by phylum
 brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
@@ -106,7 +108,8 @@ ui <- fluidPage(
       
       # Main panel for displaying outputs ----
       mainPanel(
-        textOutput("seaweed_species")
+        textOutput("seaweed_species"),
+        plotOutput("distPlot")
       )
     )
 )
@@ -127,6 +130,22 @@ server <- function(input, output, session) {
     output$seaweed_species <- renderText({ 
       paste("You have selected to plot", input$seaweed_species)
     })
+    
+    
+    ## make plot by user input
+    output$distPlot <- renderPlot({
+      
+      #!# won't work until __phylum removed form algae list
+      
+      ## subset data from user input 
+      df.subset <- subset(algae.wide.grouped, seaweed_id == input$seaweed_species)
+      
+      ## make heatmap
+      ggplot(df.subset, aes(x=month, y=distance_along_transect_m))+
+        geom_tile(color="grey85", size=0.3)  
+      })
+    
+    
 
     
 }
