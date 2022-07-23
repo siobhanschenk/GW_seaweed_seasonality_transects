@@ -1,21 +1,18 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+## Code by Siobhan Schenk
 
 ##### WORKSPACE SET UP ######
 ## load packages
 library(shiny)
 library(tidyverse)
 library(plyr)
-library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
-                                 axis.text.y = element_text(size=12, face="bold"),
-                                 axis.title.x = element_text(size=15, face="bold"),
-                                 axis.title.y = element_text(size=15, face="bold")))
+library(ggplot2); theme_set(theme_bw()+
+                              theme(panel.grid = element_blank(),
+                                    strip.background = element_rect(fill="white"),
+                                    axis.text = element_text(size = 15, face="bold"),
+                                    axis.title = element_text(size=20, face="bold"),
+                                    strip.text = element_text(size = 12, face="bold"),
+                                    legend.text=element_text(size=15),
+                                    legend.title=element_text(size=15, face="bold")))
 
 ## load data
 algae = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects/GW_seaweed_seasonality_transect_data.csv")
@@ -37,7 +34,7 @@ n=ncol(algae)
 ## make all algae abundance columns numeric 
 algae[,7:n] <- sapply(algae[,c(7:n)], as.numeric)
 
-## fill empty cells (instances of 0 percnet cover) with 0
+## fill empty cells (instances of 0 percenet cover) with 0
 algae[is.na(algae)]<-0
 
 
@@ -71,10 +68,9 @@ algae.wide.grouped[is.na(algae.wide.grouped)]<-0
 algae.wide.grouped$month = factor(algae.wide.grouped$month, levels=c("1","2","3","4","5","6","7","8","9","10","11","12"))
 
 ## get seaweed species list
-speclist = as.data.frame(colnames(algae))
-speclist = speclist[-c(1:6),]
+speclist = algae.wide$seaweed_id
+speclist = unique(speclist)
 
-#!# need to remove __phylum from here 
 
 ## subset by phylum
 brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
@@ -87,39 +83,70 @@ red = subset(algae.wide.grouped, algae.wide.grouped$phylum=="red")
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Girl in a Wetsuit (Stanley Park) Seaweed Survey"),
+    titlePanel("Monthly Seaweed Survey at Girl in a Wetsuit (Stanley Park)"),
     
-    # download button
-    downloadLink('downloadData', 'Download the seaweed transect data'),
     
     # Sidebar layout with input and output definitions ----
-    sidebarLayout(
-      
+    sidebarLayout(            
+
       # Sidebar panel for inputs ----
       sidebarPanel(
-
+      HTML('<p>These montly seaweed seasonality transcts were initiated and currently organized by 
+      Siobhan and Varoon from the 
+      <a href="https://www.zoology.ubc.ca/~parfrey/parfrey_lab/">Parfrey</a> and 
+      <a href="https://www3.botany.ubc.ca/martone/">Martone</a>
+      labs at the Univeristy of British Columbia, Vancouver Campus.</p>',
+      
+      '<p>This long-term survey work 
+      partnership with the 
+      <a href="https://stanleyparkecology.ca/">Stanley Park Ecological Sciety</a>, 
+      who was instrumental in volunteer recruitment for this project.</p>',
+      
+      '<p>If you would like to take part in our seaweed survey, please email 
+      <i>seaweedsurvey at zoology.ubc.ca</i> </p>',
+      
+      '<p>You are free to use these data in your research as long as attribution is given. Please cite the data as--</p>'),
+      
+      # download button
+      downloadLink('downloadData', 'Download the data here'),
+      
+      ), ## end of sidebarPannel
+      
+      
+      # Main panel for displaying outputs ----
+      mainPanel(
+        
+        HTML("<p>The plot below shows the mean percent cover (accorss samlpling years) of the select seaweed.</p>") ,
+        
         # Input: Selector for choosing dataset ----
         selectInput('seaweed_species',
                     label = 'Choose a seaweed to plot',
                     choices = c(speclist),
                     selected="selected_seaweed"),
-
-      ),
-      
-      # Main panel for displaying outputs ----
-      mainPanel(
+        
         textOutput("seaweed_species"),
-        plotOutput("distPlot")
-      )
-    )
-)
+        
+        
+        HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the numeric month of sampling.
+             The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
+             
+             '<p> <i> Note: empty regions on the graph indicate that there is no data available for that transect for that month.
+             This is because we could not sample due to the tide height, or other unforseen events.</i></p>'),
+        
+        downloadButton('downloadPlot', 'Download Plot'),
+        
+        plotOutput("distPlot", width = "100%"),
+        
+      ) ## end of mainPannel
+    ), ## end of sidebarLayout
+) ## end of ui
 
 
 
 ##### SERVER CODE #####
 
 # Define server logic required to draw a histogram
-server <- function(input, output, session) {
+server <- function(input, output) {
 
     ## download seaweed seasonality data as .csv file
     output$downloadData <- downloadHandler(
@@ -127,26 +154,35 @@ server <- function(input, output, session) {
       content = function(con) {write.csv(algae, con)})
     
     ## tell them which algae species they have selected
-    output$seaweed_species <- renderText({ 
-      paste("You have selected to plot", input$seaweed_species)
-    })
+    #output$seaweed_species <- renderText({ paste(You have selected to plot, input$seaweed_species)})
     
     
     ## make plot by user input
     output$distPlot <- renderPlot({
       
-      #!# won't work until __phylum removed form algae list
       
       ## subset data from user input 
       df.subset <- subset(algae.wide.grouped, seaweed_id == input$seaweed_species)
       
-      ## make heatmap
-      ggplot(df.subset, aes(x=month, y=distance_along_transect_m))+
-        geom_tile(color="grey85", size=0.3)  
-      })
+      ## set algal colors
+      phylum_colors <- c("brown"="goldenrod2", "red"="red4","green"="springgreen3")
+      
+      ## make bubble plot of abundance
+      ggplot(df.subset, aes(x=month, y=distance_along_transect_m, color=phylum))+
+        geom_point(aes(size=mean))+
+        labs(x="Sampling Month", y="Distance From Seawall (m)", 
+             size="Mean Percent Cover", color="Algal Phylum")+
+        facet_grid(transect_id~seaweed_id, scales="free")+
+        scale_y_reverse()+
+        scale_color_manual(values=phylum_colors, limits=names(phylum_colors))
+      },height = 700, width = 700 )
     
-    
-
+    output$downloadPlot <- downloadHandler(
+      filename = "transect_plot.png",
+      content=function(file){
+        device <-function(..., width, height) {
+          grDevices::png(..., width=width, height=height, res=300, units="in")}
+      ggsave(file, device=device)})
     
 }
 
