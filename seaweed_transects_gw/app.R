@@ -15,12 +15,7 @@ library(ggplot2); theme_set(theme_bw()+
                                     legend.title=element_text(size=15, face="bold")))
 
 ## load data
-algae = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects/GW_seaweed_seasonality_transect_data.csv")
-
-## plot items
-pd=position_dodge(0.1)
-color.month = c("dodgerblue4","dodgerblue","deepskyblue","cyan1","plum1","mediumorchid1","mediumpurple1",
-                "purple1","purple4","magenta4","magenta2","violet","darkorchid1")
+algae = read.csv("./Data/proj.csv")
 
 
 ##### FORMAT DATA FOR ANALYSIS ####
@@ -34,7 +29,7 @@ n=ncol(algae)
 ## make all algae abundance columns numeric 
 algae[,7:n] <- sapply(algae[,c(7:n)], as.numeric)
 
-## fill empty cells (instances of 0 percenet cover) with 0
+## fill empty cells (instances of 0 percent cover) with 0
 algae[is.na(algae)]<-0
 
 
@@ -52,7 +47,7 @@ algae.wide = separate(data = algae.wide,
                       sep = "__")
 
 ## summarize data across years for the same transect and month
-algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","seaweed_id","phylum","month"), 
+algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","seaweed_id","phylum","month", "year"), 
                            summarise,
                            N = length(percent_cover), ## sample size
                            mean = mean(percent_cover),
@@ -103,14 +98,20 @@ ui <- fluidPage(
       who was instrumental in volunteer recruitment for this project.</p>',
       
       '<p>If you would like to take part in our seaweed survey, please email 
-      <i>seaweedsurvey at zoology.ubc.ca</i> </p>',
+      <i>seaweedsurvey@zoology.ubc.ca</i> </p>',
       
-      '<p>You are free to use these data in your research as long as attribution is given. Please cite the data as--</p>'),
+      '<p>You are free to use these data in your research as long as attribution is given.
+      Please cite the data as:</p>
+      <p>Laura Wegener Parfrey, Patrick Martone, Siobhan Schenk, and Varoon Pornsinsiriruk. 
+      2022.
+      <i>Monthly algae survey at Girl in a Wetsuit, Stanley Park.</i>
+      https://siobhanschenk.shinyapps.io/ algae_transects_stanley_park/</p>
+      <p>*Authors are in alphabetical order based on first name<p>'),
       
-      # download button
-      downloadLink('downloadData', 'Download the data here'),
+      # download button for raw data
+      downloadLink('downloadRawData', 'Download the raw data'),
       
-      ), ## end of sidebarPannel
+      HTML("<p>If you would like the sampling protocol please email us at <i>seaweedsurvey@zoology.ubc.ca</i></p>")), ## end of sidebarPannel
       
       
       # Main panel for displaying outputs ----
@@ -135,7 +136,7 @@ ui <- fluidPage(
         
         downloadButton('downloadPlot', 'Download Plot'),
         
-        plotOutput("distPlot", width = "100%"),
+        plotOutput("distPlot", width = "90%"),
         
       ) ## end of mainPannel
     ), ## end of sidebarLayout
@@ -149,13 +150,10 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     ## download seaweed seasonality data as .csv file
-    output$downloadData <- downloadHandler(
+    output$downloadRawData <- downloadHandler(
       filename = function() {paste('algae-', Sys.Date(), '.csv', sep='')},
       content = function(con) {write.csv(algae, con)})
-    
-    ## tell them which algae species they have selected
-    #output$seaweed_species <- renderText({ paste(You have selected to plot, input$seaweed_species)})
-    
+
     
     ## make plot by user input
     output$distPlot <- renderPlot({
@@ -172,13 +170,13 @@ server <- function(input, output) {
         geom_point(aes(size=mean))+
         labs(x="Sampling Month", y="Distance From Seawall (m)", 
              size="Mean Percent Cover", color="Algal Phylum")+
-        facet_grid(transect_id~seaweed_id, scales="free")+
+        facet_grid(transect_id~year+seaweed_id, scales="free")+
         scale_y_reverse()+
         scale_color_manual(values=phylum_colors, limits=names(phylum_colors))
       },height = 700, width = 700 )
     
     output$downloadPlot <- downloadHandler(
-      filename = "transect_plot.png",
+      filename = "bubble_abundance_transect_plot.png",
       content=function(file){
         device <-function(..., width, height) {
           grDevices::png(..., width=width, height=height, res=300, units="in")}

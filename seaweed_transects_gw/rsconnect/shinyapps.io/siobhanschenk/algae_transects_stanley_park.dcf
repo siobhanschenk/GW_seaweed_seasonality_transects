@@ -1,0 +1,13 @@
+name: algae_transects_stanley_park
+title: algae_transects_stanley_park
+username:
+account: siobhanschenk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6734438
+bundleId: 6162566
+url: https://siobhanschenk.shinyapps.io/algae_transects_stanley_park/
+when: 1659546447.14125
+lastSyncTime: 1659546447.14128
+asMultiple: FALSE
+asStatic: FALSE
