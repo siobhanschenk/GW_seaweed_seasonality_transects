@@ -27,7 +27,7 @@ algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 n=ncol(algae)
 
 ## make all algae abundance columns numeric 
-algae[,7:n] <- sapply(algae[,c(8:n)], as.numeric)
+algae[,7:n] <- sapply(algae[,c(9:n)], as.numeric)
 
 ## fill empty cells (instances of 0 percent cover) with 0
 algae[is.na(algae)]<-0
@@ -35,7 +35,7 @@ algae[is.na(algae)]<-0
 
 ## pivot data. This is important for plotting and analysis later
 algae.wide = algae %>% 
-  pivot_longer(-c(1:7))
+  pivot_longer(-c(1:8))
 
 ## rename value column
 names(algae.wide)[names(algae.wide)=="value"]<-"percent_cover"
