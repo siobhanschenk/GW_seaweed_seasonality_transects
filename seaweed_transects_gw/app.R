@@ -27,7 +27,7 @@ algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 n=ncol(algae)
 
 ## make all algae abundance columns numeric 
-algae[,7:n] <- sapply(algae[,c(9:n)], as.numeric)
+algae[,9:n] <- sapply(algae[,c(9:n)], as.numeric)
 
 ## fill empty cells (instances of 0 percent cover) with 0
 algae[is.na(algae)]<-0
@@ -102,11 +102,7 @@ ui <- fluidPage(
       
       '<p>You are free to use these data in your research as long as attribution is given.
       Please cite the data as:</p>
-      <p>Laura Wegener Parfrey, Patrick Martone, Siobhan Schenk, and Varoon Pornsinsiriruk. 
-      2022.
-      <i>Monthly algae survey at Girl in a Wetsuit, Stanley Park.</i>
-      https://siobhanschenk.shinyapps.io/ algae_transects_stanley_park/</p>
-      <p>*Authors are in alphabetical order based on first name<p>'),
+      <p><i>Borealis data info</i> </p>'),
       
       # download button for raw data
       downloadLink('downloadRawData', 'Download the raw data'),
