@@ -102,12 +102,15 @@ ui <- fluidPage(
       
       '<p>You are free to use these data in your research as long as attribution is given.
       Please cite the data as:</p>
-      <p><i>Borealis data info</i> </p>'),
+      <p><i>Long-term monitoring of macroalgal biodiversity in Stanley Park, Vancouver, British Columbia 
+      Schenk, Siobhan; P. Supratya, Varoon; T. Martone, Patrick; W. Parfrey, Laura, (2022) 
+      <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">https://doi.org/10.5683/SP3/IKGB6E, </a>Borealis</i> 
+      This Borealis link will have the latest data release</p>'),
       
       # download button for raw data
-      downloadLink('downloadRawData', 'Download the raw data'),
+      downloadLink('downloadRawData', 'Download the raw data for the app here'),
       
-      HTML("<p>If you would like the sampling protocol please email us at <i>seaweedsurvey@zoology.ubc.ca</i></p>")), ## end of sidebarPannel
+      HTML('<p>If you would like the sampling protocol please email us at <i>seaweedsurvey@zoology.ubc.ca</i> or visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a></p>')), ## end of sidebarPannel
       
       
       # Main panel for displaying outputs ----
