@@ -68,9 +68,9 @@ speclist = unique(speclist)
 
 
 ## subset by phylum
-brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
-green = subset(algae.wide.grouped, algae.wide.grouped$phylum=="green")
-red = subset(algae.wide.grouped, algae.wide.grouped$phylum=="red")
+#brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
+#green = subset(algae.wide.grouped, algae.wide.grouped$phylum=="green")
+#red = subset(algae.wide.grouped, algae.wide.grouped$phylum=="red")
 
 
 ###### UI CODE #######
