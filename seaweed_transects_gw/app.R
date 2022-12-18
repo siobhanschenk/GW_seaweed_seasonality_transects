@@ -2,6 +2,7 @@
 
 ##### WORKSPACE SET UP ######
 ## load packages
+library(DT)
 library(shiny)
 library(tidyverse)
 library(plyr)
@@ -22,7 +23,6 @@ algae = read.csv("./Data/proj.csv")
 ## remove transects 1 and 5
 algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 
-
 ## how many total columns -> makes it so you don't have to edit numbers as new algae are added
 n=ncol(algae)
 
@@ -39,6 +39,44 @@ algae.wide = algae %>%
 
 ## rename value column
 names(algae.wide)[names(algae.wide)=="value"]<-"percent_cover"
+
+##### SET UP TABLE OF DOMINANT TAXA #####
+
+## group the data to get the most abundant taxa in the group of three transects for each height 
+algae.height = ddply(algae.wide, c("year", "month", "distance_along_transect_m", "name"),
+                     summarise,
+                     mean.percent.cover = mean(percent_cover))
+
+## pivot the data back 
+algae.height.wide = algae.height %>%
+  pivot_wider(names_from=name, values_from = mean.percent.cover)
+
+## get end of otu table
+nspecies = ncol(algae.height.wide)
+
+## get otu dataframe
+algae.otu = algae.height.wide[,c(4:nspecies)]
+
+## get list of dominant taxa in otu dataframe 
+algae.max = algae.otu %>%
+  mutate(dominant_taxa = names(.)[max.col(.)])
+
+## merge algae.max back with original algae dataset
+algae.dom = full_join(algae.height.wide, algae.max)
+
+## remove otu table
+algae.dom = algae.dom[,-c(4:nspecies)]
+
+## remove phylum info
+algae.dom$dominant_taxa <-gsub("__.*","",algae.dom$dominant_taxa)
+
+## rename columns for human readability
+names(algae.dom)[names(algae.dom)=="distance_along_transect_m"]<-"Quadrat Height (m)"
+names(algae.dom)[names(algae.dom)=="dominant_taxa"]<-"Dominant Algae"
+names(algae.dom)[names(algae.dom)=="year"]<-"Year"
+names(algae.dom)[names(algae.dom)=="month"]<-"Month"
+
+##### SET UP SPECIES ABUNDANCE PLOT #####
 
 ## separate out seaweed phylum info 
 algae.wide = separate(data = algae.wide, 
@@ -65,12 +103,6 @@ algae.wide.grouped$month = factor(algae.wide.grouped$month, levels=c("1","2","3"
 ## get seaweed species list
 speclist = algae.wide$seaweed_id
 speclist = unique(speclist)
-
-
-## subset by phylum
-#brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
-#green = subset(algae.wide.grouped, algae.wide.grouped$phylum=="green")
-#red = subset(algae.wide.grouped, algae.wide.grouped$phylum=="red")
 
 
 ###### UI CODE #######
@@ -116,7 +148,8 @@ ui <- fluidPage(
       # Main panel for displaying outputs ----
       mainPanel(
         
-        HTML("<p>The plot below shows the mean percent cover (accorss samlpling years) of the select seaweed.</p>") ,
+        
+        HTML("<h3>The plot below shows the mean percent cover (accross samlpling years) of the select seaweed.</h3>"),
         
         # Input: Selector for choosing dataset ----
         selectInput('seaweed_species',
@@ -126,19 +159,43 @@ ui <- fluidPage(
         
         textOutput("seaweed_species"),
         
-        
         HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the numeric month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
              '<p> <i> Note: empty regions on the graph indicate that there is no data available for that transect for that month.
-             This is because we could not sample due to the tide height, or other unforseen events.</i></p>'),
+             This is because we could not sample due to the tide height, or other unforseen events.</i> </p>'),
         
         downloadButton('downloadPlot', 'Download Plot'),
         
         plotOutput("distPlot", width = "90%"),
         
+        ## space out bottom of graph and dominant taxa table
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        
+        HTML('<h3>Table showing the dominant taxa at each height by month and year </h3>'),
+        
+        ## minimal table
+          # https://shiny.rstudio.com/gallery/basic-datatable.html
+        DT::dataTableOutput("dominant")
+        
       ) ## end of mainPannel
-    ), ## end of sidebarLayout
+    ) ## end of sidebarLayout
 ) ## end of ui
 
 
@@ -152,11 +209,10 @@ server <- function(input, output) {
     output$downloadRawData <- downloadHandler(
       filename = function() {paste('algae-', Sys.Date(), '.csv', sep='')},
       content = function(con) {write.csv(algae, con)})
-
+  
     
     ## make plot by user input
     output$distPlot <- renderPlot({
-      
       
       ## subset data from user input 
       df.subset <- subset(algae.wide.grouped, seaweed_id == input$seaweed_species)
@@ -181,7 +237,10 @@ server <- function(input, output) {
           grDevices::png(..., width=width, height=height, res=300, units="in")}
       ggsave(file, device=device)})
     
+    output$dominant = DT::renderDataTable(algae.dom)
+    
 }
+
 
 
 
