@@ -5,6 +5,7 @@
 library(shiny)
 library(tidyverse)
 library(plyr)
+library(stringi)
 library(ggplot2); theme_set(theme_bw()+
                               theme(panel.grid = element_blank(),
                                     strip.background = element_rect(fill="white"),
@@ -12,10 +13,11 @@ library(ggplot2); theme_set(theme_bw()+
                                     axis.title = element_text(size=20, face="bold"),
                                     strip.text = element_text(size = 12, face="bold"),
                                     legend.text=element_text(size=15),
-                                    legend.title=element_text(size=15, face="bold")))
+                                    legend.title=element_text(size=15, face="bold"),
+                                    plot.title = element_text(size=20, face="italic")))
 
 ## load data
-algae = read.csv("./Data/proj.csv")
+algae = read.csv("./Data/GW_seaweed_seasonality_transect_data.csv")
 
 
 ##### FORMAT DATA FOR ANALYSIS ####
@@ -56,11 +58,22 @@ algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_
          lci = mean - 1.960*(se), ## lower bound of 95% confidence interval
          uci = mean + 1.960*(se))
 
-## fill empty cells (instances of 0 percnet cover) with 0 (again)
-algae.wide.grouped[is.na(algae.wide.grouped)]<-0
+## fill empty cells (instances of 0 percent cover) with 0 (again)
+algae.wide.grouped$mean[is.na(algae.wide.grouped$mean)]<-0
+
+
+## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
+algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
+                                              pattern=c("3","4","5","6","7","8","9","10","11","12"),
+                                              replacement=c("Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."),
+                                              vectorize=FALSE)
+algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
+                                                   pattern=c("1","2"),
+                                                   replacement=c("Jan.", "Feb."),
+                                                   vectorize=FALSE)
 
 ## set order of month
-algae.wide.grouped$month = factor(algae.wide.grouped$month, levels=c("1","2","3","4","5","6","7","8","9","10","11","12"))
+algae.wide.grouped$month = factor(algae.wide.grouped$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
 
 ## get seaweed species list
 speclist = algae.wide$seaweed_id
@@ -92,11 +105,6 @@ ui <- fluidPage(
       <a href="https://www3.botany.ubc.ca/martone/">Martone</a>
       labs at the Univeristy of British Columbia, Vancouver Campus.</p>',
       
-      '<p>This long-term survey work 
-      partnership with the 
-      <a href="https://stanleyparkecology.ca/">Stanley Park Ecological Sciety</a>, 
-      who was instrumental in volunteer recruitment for this project.</p>',
-      
       '<p>If you would like to take part in our seaweed survey, please email 
       <i>seaweedsurvey@zoology.ubc.ca</i> </p>',
       
@@ -110,7 +118,7 @@ ui <- fluidPage(
       # download button for raw data
       downloadLink('downloadRawData', 'Download the raw data for the app here'),
       
-      HTML('<p>If you would like the sampling protocol please email us at <i>seaweedsurvey@zoology.ubc.ca</i> or visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a></p>')), ## end of sidebarPannel
+      HTML('<p>If you would like the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>')), ## end of sidebarPannel
       
       
       # Main panel for displaying outputs ----
@@ -127,15 +135,17 @@ ui <- fluidPage(
         textOutput("seaweed_species"),
         
         
-        HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the numeric month of sampling.
+        HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
              '<p> <i> Note: empty regions on the graph indicate that there is no data available for that transect for that month.
-             This is because we could not sample due to the tide height, or other unforseen events.</i></p>'),
+             This is because we could not sample due to the tide height, or other unforseen events. Grey boxes indicate that the algae was
+             not found in the quadrat.</i></p>'),
         
         downloadButton('downloadPlot', 'Download Plot'),
         
         plotOutput("distPlot", width = "90%"),
+        
         
       ) ## end of mainPannel
     ), ## end of sidebarLayout
@@ -162,24 +172,35 @@ server <- function(input, output) {
       df.subset <- subset(algae.wide.grouped, seaweed_id == input$seaweed_species)
       
       ## set algal colors
-      phylum_colors <- c("brown"="goldenrod2", "red"="red4","green"="springgreen3")
+      #phylum_colors <- c("brown"=c(low="wheat1",high="goldenrod4"), "red"="red4","green"="springgreen3")
+      
+      ## use to make the 0s white 
+      df.subset$mean <- ifelse(df.subset$mean==0,NA,df.subset$mean)
       
       ## make bubble plot of abundance
-      ggplot(df.subset, aes(x=month, y=distance_along_transect_m, color=phylum))+
-        geom_point(aes(size=mean))+
+      ggplot(df.subset, aes(x=month, y=distance_along_transect_m, fill=mean))+
+        geom_tile(color = "gray")+
         labs(x="Sampling Month", y="Distance From Seawall (m)", 
-             size="Mean Percent Cover", color="Algal Phylum")+
-        facet_grid(transect_id~year+seaweed_id, scales="free")+
+             fill="Mean Percent Cover")+
+        facet_grid(paste0("transect ", df.subset$transect_id)~year, scales="free", space="free")+
         scale_y_reverse()+
-        scale_color_manual(values=phylum_colors, limits=names(phylum_colors))
+        scale_fill_gradient(low="lightskyblue1", high="navy", na.value="grey90", limits = c(0,100))+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+              strip.text.y = element_text(angle = 0))+
+        ggtitle(paste0(df.subset$seaweed_id))
+      
+      
       },height = 700, width = 700 )
     
+    
     output$downloadPlot <- downloadHandler(
-      filename = "bubble_abundance_transect_plot.png",
+      filename =  "seaweed_abundance_transect_plot.png",
       content=function(file){
         device <-function(..., width, height) {
-          grDevices::png(..., width=width, height=height, res=300, units="in")}
-      ggsave(file, device=device)})
+          grDevices::png(..., width=width, height=height, res=500, 
+                         units="in"
+                         )}
+      ggsave(file, device=device, width=12, height=8, units="in")})
     
 }
 
