@@ -62,11 +62,28 @@ algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_
 algae.wide.grouped$mean[is.na(algae.wide.grouped$mean)]<-0
 
 
+
+## add yes/no variable to remove seaweeds only counted 2 or less times
+algae.wide.grouped$yn = ifelse(algae.wide.grouped$mean > 0, "1", "0")
+
+keeplist = ddply(algae.wide.grouped, c("seaweed_id"),
+                  summarize,
+                  occurance = sum(as.numeric(yn)))
+
+keeplist = subset(keeplist, keeplist$occurance>4)
+
+keeplist = c(unique(keeplist$seaweed_id))
+
+
+## subset out low occurance
+algae.wide.grouped = subset(algae.wide.grouped, algae.wide.grouped$seaweed_id %in% c(keeplist))
+
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
 algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
                                               pattern=c("3","4","5","6","7","8","9","10","11","12"),
                                               replacement=c("Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."),
                                               vectorize=FALSE)
+
 algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
                                                    pattern=c("1","2"),
                                                    replacement=c("Jan.", "Feb."),
@@ -76,7 +93,7 @@ algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
 algae.wide.grouped$month = factor(algae.wide.grouped$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
 
 ## get seaweed species list
-speclist = algae.wide$seaweed_id
+speclist = algae.wide.grouped$seaweed_id
 speclist = unique(speclist)
 
 
@@ -118,7 +135,7 @@ ui <- fluidPage(
       # download button for raw data
       downloadLink('downloadRawData', 'Download the raw data for the app here'),
       
-      HTML('<p>If you would like the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>')), ## end of sidebarPannel
+      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>')), ## end of sidebarPannel
       
       
       # Main panel for displaying outputs ----
@@ -176,6 +193,7 @@ server <- function(input, output) {
       
       ## use to make the 0s white 
       df.subset$mean <- ifelse(df.subset$mean==0,NA,df.subset$mean)
+      
       
       ## make bubble plot of abundance
       ggplot(df.subset, aes(x=month, y=distance_along_transect_m, fill=mean))+
