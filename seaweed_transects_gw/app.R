@@ -158,10 +158,35 @@ ui <- fluidPage(
              '<p> <i> Note: empty regions on the graph indicate that there is no data available for that transect for that month.
              This is because we could not sample due to the tide height, or other unforseen events. Grey boxes indicate that the algae was
              not found in the quadrat.</i></p>'),
+      
         
         downloadButton('downloadPlot', 'Download Plot'),
         
         plotOutput("distPlot", width = "90%"),
+        
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+
+        HTML('<p>Below is a photo of the seaweed species being plotted (<i>photos by us</i>).</p>'),
+        
+        imageOutput(outputId="Imagen"),
+        
+
         
         
       ) ## end of mainPannel
@@ -220,6 +245,13 @@ server <- function(input, output) {
                          )}
       ggsave(file, device=device, width=12, height=8, units="in")})
     
+    ## render image
+    output$Imagen<- renderImage({
+      Leg<-paste0("./Data/images/ulva_sp.JPG")
+          list(src=Leg, width = "50%",
+               height = "50%",
+               alt = "photo of selected algae")
+    }, deleteFile = FALSE)   
 }
 
 
