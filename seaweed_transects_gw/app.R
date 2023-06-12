@@ -108,7 +108,7 @@ speclist = unique(speclist)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Monthly Seaweed Survey at Girl in a Wetsuit (Stanley Park)"),
+    titlePanel("Monthly Seaweed Survey at Girl in a Wetsuit (Stanley Park, Vancouver, BC)"),
     
     
     # Sidebar layout with input and output definitions ----
@@ -116,7 +116,8 @@ ui <- fluidPage(
 
       # Sidebar panel for inputs ----
       sidebarPanel(
-      HTML('<p>These montly seaweed seasonality transcts were initiated and currently organized by 
+      HTML('<h4>Data Information</h4>',
+        '<p>These montly seaweed seasonality transcts were initiated and currently organized by 
       Siobhan and Varoon from the 
       <a href="https://www.zoology.ubc.ca/~parfrey/parfrey_lab/">Parfrey</a> and 
       <a href="https://www3.botany.ubc.ca/martone/">Martone</a>
@@ -135,7 +136,22 @@ ui <- fluidPage(
       # download button for raw data
       downloadLink('downloadRawData', 'Download the raw data for the app here'),
       
-      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>')), ## end of sidebarPannel
+      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>'), 
+      
+      br(),
+      
+      HTML('<h4>Volunteers </h4>',
+        '<p>We want to say a huge thank you to all the people who donated their time to help us collect these data. 
+           In particular: 
+           Dr. Bridgette Clarkston, Andrea Jackman, Connor Wardrop,
+           Emma Jourdain, Emma Menchions, Evan Kohn,
+           Garrett Ainsworth-Cruickshank, MJ Herrin, Reilly Perovich,
+           Risa, Ryan Ju, Tobin Sparling, Vincent Billy</p>'),
+      br(),
+      
+      ),
+      
+      ## end of sidebarPannel
       
       
       # Main panel for displaying outputs ----
@@ -155,7 +171,9 @@ ui <- fluidPage(
         HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
-             '<p> <i> Note: empty regions on the graph indicate that there is no data available for that transect for that month.
+             '<p> <i> Note (1): Below the plot, we show a photo of the selected seaweed (if we have one).</i></p>',
+             
+             '<p> <i> Note (2): empty regions on the graph indicate that there is no data available for that transect for that month.
              This is because we could not sample due to the tide height, or other unforseen events. Grey boxes indicate that the algae was
              not found in the quadrat.</i></p>'),
       
@@ -186,7 +204,10 @@ ui <- fluidPage(
         
         imageOutput(outputId="Imagen"),
         
-
+        br(),
+        br(),
+        br(),
+        br(),
         
         
       ) ## end of mainPannel
@@ -247,10 +268,10 @@ server <- function(input, output) {
     
     ## render image
     output$Imagen<- renderImage({
-      Leg<-paste0("./Data/images/ulva_sp.JPG")
+      Leg<-paste0("./Data/images/", print(c(unique(input$seaweed_species))), ".JPG")
           list(src=Leg, width = "50%",
-               height = "50%",
-               alt = "photo of selected algae")
+               height = "100%",
+               alt = "photo of selected algae (if we have a photo).")
     }, deleteFile = FALSE)   
 }
 
