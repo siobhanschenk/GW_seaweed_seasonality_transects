@@ -6,6 +6,7 @@ library(shiny)
 library(tidyverse)
 library(plyr)
 library(stringi)
+library(data.table)
 library(ggplot2); theme_set(theme_bw()+
                               theme(panel.grid = element_blank(),
                                     strip.background = element_rect(fill="white"),
@@ -18,6 +19,7 @@ library(ggplot2); theme_set(theme_bw()+
 
 ## load data
 algae = read.csv("./Data/GW_seaweed_seasonality_transect_data.csv")
+commonnames = read.csv("./Data/GW_common_names.csv")
 
 
 ##### FORMAT DATA FOR ANALYSIS ####
@@ -107,11 +109,11 @@ speclist = unique(speclist)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
-    # Application title
+    ##### Application title ######
     titlePanel("Monthly Seaweed Survey at Girl in a Wetsuit (Stanley Park, Vancouver, BC)"),
     
     
-    # Sidebar layout with input and output definitions ----
+    ##### Sidebar layout with input and output definitions ----
     sidebarLayout(            
 
       # Sidebar panel for inputs ----
@@ -143,7 +145,7 @@ ui <- fluidPage(
       HTML('<h4>Volunteers </h4>',
         '<p>We want to say a huge thank you to all the people who donated their time to help us collect these data. 
            In particular: 
-           Dr. Bridgette Clarkston, Andrea Jackman, Connor Wardrop,
+           Andrea Jackman, Dr. Bridgette Clarkston, Connor Wardrop,
            Emma Jourdain, Emma Menchions, Evan Kohn,
            Garrett Ainsworth-Cruickshank, MJ Herrin, Reilly Perovich,
            Risa, Ryan Ju, Tobin Sparling, Vincent Billy</p>'),
@@ -157,9 +159,10 @@ ui <- fluidPage(
       # Main panel for displaying outputs ----
       mainPanel(
         
-        HTML("<p>The plot below shows the mean percent cover (accorss samlpling years) of the select seaweed.</p>") ,
+        ##### more plot text ######
+        HTML("<h4>The plot below shows the mean percent cover (accorss sampling years) of the select seaweed.</h4>") ,
         
-        # Input: Selector for choosing dataset ----
+        ##### Input: Selector for choosing dataset ----
         selectInput('seaweed_species',
                     label = 'Choose a seaweed to plot',
                     choices = c(speclist),
@@ -167,6 +170,7 @@ ui <- fluidPage(
         
         textOutput("seaweed_species"),
         
+        ##### plot text info ######
         
         HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
@@ -182,6 +186,7 @@ ui <- fluidPage(
         
         plotOutput("distPlot", width = "90%"),
         
+        ##### move image #######
         br(),
         br(),
         br(),
@@ -206,6 +211,14 @@ ui <- fluidPage(
         
         br(),
         br(),
+        
+        HTML('<h4>Table showing the latin binomial and common names for seaweeds</h4>'),
+        
+        ##### set up table ######
+        tableOutput('table'),
+
+        
+        ##### leave space at the bottom of the page #####
         br(),
         br(),
         
@@ -221,13 +234,13 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    ## download seaweed seasonality data as .csv file
+    ###### download seaweed seasonality data as .csv file ######
     output$downloadRawData <- downloadHandler(
       filename = function() {paste('algae-', Sys.Date(), '.csv', sep='')},
       content = function(con) {write.csv(algae, con)})
 
     
-    ## make plot by user input
+    ##### make plot by user input #######
     output$distPlot <- renderPlot({
       
       
@@ -241,7 +254,7 @@ server <- function(input, output) {
       df.subset$mean <- ifelse(df.subset$mean==0,NA,df.subset$mean)
       
       
-      ## make bubble plot of abundance
+      ##### make bubble plot of abundance ######
       ggplot(df.subset, aes(x=month, y=distance_along_transect_m, fill=mean))+
         geom_tile(color = "gray")+
         labs(x="Sampling Month", y="Distance From Seawall (m)", 
@@ -256,7 +269,7 @@ server <- function(input, output) {
       
       },height = 700, width = 700 )
     
-    
+    ###### downlaod and save plot ######
     output$downloadPlot <- downloadHandler(
       filename =  "seaweed_abundance_transect_plot.png",
       content=function(file){
@@ -266,13 +279,19 @@ server <- function(input, output) {
                          )}
       ggsave(file, device=device, width=12, height=8, units="in")})
     
-    ## render image
+    ##### render image of selected seaweed ######
     output$Imagen<- renderImage({
       Leg<-paste0("./Data/images/", print(c(unique(input$seaweed_species))), ".JPG")
           list(src=Leg, width = "50%",
                height = "100%",
                alt = "photo of selected algae (if we have a photo).")
     }, deleteFile = FALSE)   
+    
+    
+    ####### create table of common names ######
+    output$table = renderTable(commonnames)
+
+    
 }
 
 
