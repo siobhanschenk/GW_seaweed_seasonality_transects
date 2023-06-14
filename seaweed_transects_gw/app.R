@@ -164,7 +164,7 @@ ui <- fluidPage(
         
         ##### Input: Selector for choosing dataset ----
         selectInput('seaweed_species',
-                    label = 'Choose a seaweed to plot',
+                    label = 'Choose a seaweed to plot (see bottom of page for common names)',
                     choices = c(speclist),
                     selected="selected_seaweed"),
         
