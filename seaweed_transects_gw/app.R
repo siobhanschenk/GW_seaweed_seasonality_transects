@@ -18,37 +18,11 @@ library(ggplot2); theme_set(theme_bw()+
                                     plot.title = element_text(size=20, face="italic")))
 
 ## load data
-algae = read.csv("./Data/GW_seaweed_seasonality_transect_data.csv")
+algae.wide = read.csv("./Data/GW_seaweed_transects_data_cleaned.csv")
 commonnames = read.csv("./Data/GW_common_names.csv")
 
 
 ##### FORMAT DATA FOR ANALYSIS ####
-## remove transects 1 and 5
-algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
-
-
-## how many total columns -> makes it so you don't have to edit numbers as new algae are added
-n=ncol(algae)
-
-## make all algae abundance columns numeric 
-algae[,9:n] <- sapply(algae[,c(9:n)], as.numeric)
-
-## fill empty cells (instances of 0 percent cover) with 0
-algae[is.na(algae)]<-0
-
-
-## pivot data. This is important for plotting and analysis later
-algae.wide = algae %>% 
-  pivot_longer(-c(1:8))
-
-## rename value column
-names(algae.wide)[names(algae.wide)=="value"]<-"percent_cover"
-
-## separate out seaweed phylum info 
-algae.wide = separate(data = algae.wide, 
-                      col = name, 
-                      into = c("seaweed_id","phylum"), 
-                      sep = "__")
 
 ## summarize data across years for the same transect and month
 algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","seaweed_id","phylum","month", "year"), 
@@ -261,7 +235,7 @@ server <- function(input, output) {
              fill="Mean Percent Cover")+
         facet_grid(paste0("transect ", df.subset$transect_id)~year, scales="free", space="free")+
         scale_y_reverse()+
-        scale_fill_gradient(low="lightskyblue1", high="navy", na.value="grey90", limits = c(0,100))+
+        scale_fill_gradient(low="skyblue", high="navy", na.value="grey90", limits = c(0,100))+
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
               strip.text.y = element_text(angle = 0))+
         ggtitle(paste0(df.subset$seaweed_id))
@@ -282,7 +256,7 @@ server <- function(input, output) {
     ##### render image of selected seaweed ######
     output$Imagen<- renderImage({
       Leg<-paste0("./Data/images/", print(c(unique(input$seaweed_species))), ".JPG")
-          list(src=Leg, width = "50%",
+          list(src=Leg, width = "100a%",
                height = "100%",
                alt = "photo of selected algae (if we have a photo).")
     }, deleteFile = FALSE)   
