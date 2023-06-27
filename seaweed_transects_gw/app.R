@@ -106,7 +106,7 @@ ui <- fluidPage(
       '<p>You are free to use these data in your research as long as attribution is given.
       Please cite the data as:</p>
       <p><i>Long-term monitoring of macroalgal biodiversity in Stanley Park, Vancouver, British Columbia 
-      Schenk, Siobhan; P. Supratya, Varoon; T. Martone, Patrick; W. Parfrey, Laura, (2022) 
+      Schenk, Siobhan; Supratya, Varoon P.; Martone, Patrick T.; Parfrey, Laura W. (2022) 
       <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">https://doi.org/10.5683/SP3/IKGB6E, </a>Borealis</i> 
       This Borealis link will have the latest data release</p>'),
       
@@ -135,7 +135,7 @@ ui <- fluidPage(
       mainPanel(
         
         ##### more plot text ######
-        HTML("<h4>The plot below shows the mean percent cover (accorss sampling years) of the select seaweed.</h4>") ,
+        HTML("<h4>The plot below shows the mean percent cover (acorss sampling years) of the select seaweed.</h4>") ,
         
         ##### Input: Selector for choosing dataset ----
         selectInput('seaweed_species',
@@ -150,11 +150,14 @@ ui <- fluidPage(
         HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
-             '<p> <i> Note (1): Below the plot, we show a photo of the selected seaweed (if we have one).</i></p>',
+             '<p> <i> Note (1):</i> <b>Grey</b> boxes indicate that the algae was
+             not found in the quadrat. <b>Empty</b> regions (where the heatmap grid from 0 to n metres from the seawall ends) on the graph indicate that there is no data available for that transect for that month.
+             This is because we could not sample due to the tide height, or other unforseen events.</p>' ,
              
-             '<p> <i> Note (2): <b>Empty</b> regions on the graph indicate that there is no data available for that transect for that month.
-             This is because we could not sample due to the tide height, or other unforseen events. <b>Grey</b> boxes indicate that the algae was
-             not found in the quadrat.</i></p>'),
+             '<p> <i> Note (2):</i> The fill scale changes for each seaweed species. Make sure to check the color scale bar on the right of the plot when comparing relative abundances.</p>',
+             
+             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). *Photos by Varoon P. Supratya.</p>'
+             ),
       
         
         downloadButton('downloadPlot', 'Download Plot'),
@@ -180,7 +183,7 @@ ui <- fluidPage(
         br(),
         br(),
 
-        HTML('<p>Below is a photo of the seaweed species being plotted (<i>photos by us</i>).</p>'),
+      #  HTML('<p>Below is a photo of the seaweed species being plotted (<i>photos by us</i>).</p>'),
         
         imageOutput(outputId="Imagen"),
         
@@ -222,8 +225,10 @@ server <- function(input, output) {
       ## subset data from user input 
       df.subset <- subset(algae.wide.grouped, seaweed_id == input$seaweed_species)
       
-      ## set algal colors
-      #phylum_colors <- c("brown"=c(low="wheat1",high="goldenrod4"), "red"="red4","green"="springgreen3")
+      ## use gsub to change phylum colors to better color
+      df.subset$phylum = gsub("brown", "darkgoldenrod4", df.subset$phylum)
+      df.subset$phylum = gsub("red", "maroon4", df.subset$phylum)
+      df.subset$phylum = gsub("green", "forestgreen", df.subset$phylum)
       
       ## use to make the 0s white 
       df.subset$mean <- ifelse(df.subset$mean==0,NA,df.subset$mean)
@@ -240,7 +245,8 @@ server <- function(input, output) {
           low=c(unique(df.subset$phylum)),
           high=c(unique(df.subset$phylum)),
       na.value="grey90", 
-      limits = c(0,100))+
+     # limits = c(0,100)
+      )+
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
               strip.text.y = element_text(angle = 0))+
         ggtitle(paste0(df.subset$seaweed_id))
