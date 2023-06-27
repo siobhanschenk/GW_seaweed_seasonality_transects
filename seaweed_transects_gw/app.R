@@ -22,6 +22,7 @@ algae.wide = read.csv("./Data/GW_seaweed_transects_data_cleaned.csv")
 commonnames = read.csv("./Data/GW_common_names.csv")
 
 
+
 ##### FORMAT DATA FOR ANALYSIS ####
 
 ## summarize data across years for the same transect and month
@@ -122,7 +123,7 @@ ui <- fluidPage(
            Andrea Jackman, Dr. Bridgette Clarkston, Connor Wardrop,
            Emma Jourdain, Emma Menchions, Evan Kohn,
            Garrett Ainsworth-Cruickshank, MJ Herrin, Reilly Perovich,
-           Risa, Ryan Ju, Tobin Sparling, Vincent Billy</p>'),
+           Risa Ogushi, Ryan Ju, Tobin Sparling, Vincent Billy</p>'),
       br(),
       
       ),
@@ -151,8 +152,8 @@ ui <- fluidPage(
              
              '<p> <i> Note (1): Below the plot, we show a photo of the selected seaweed (if we have one).</i></p>',
              
-             '<p> <i> Note (2): empty regions on the graph indicate that there is no data available for that transect for that month.
-             This is because we could not sample due to the tide height, or other unforseen events. Grey boxes indicate that the algae was
+             '<p> <i> Note (2): <b>Empty</b> regions on the graph indicate that there is no data available for that transect for that month.
+             This is because we could not sample due to the tide height, or other unforseen events. <b>Grey</b> boxes indicate that the algae was
              not found in the quadrat.</i></p>'),
       
         
@@ -230,12 +231,16 @@ server <- function(input, output) {
       
       ##### make bubble plot of abundance ######
       ggplot(df.subset, aes(x=month, y=distance_along_transect_m, fill=mean))+
-        geom_tile(color = "gray")+
+        geom_tile(color = "grey50", lwd = 0.5, linetype = 1)+
         labs(x="Sampling Month", y="Distance From Seawall (m)", 
              fill="Mean Percent Cover")+
         facet_grid(paste0("transect ", df.subset$transect_id)~year, scales="free", space="free")+
         scale_y_reverse()+
-        scale_fill_gradient(low="skyblue", high="navy", na.value="grey90", limits = c(0,100))+
+        scale_fill_gradient2(
+          low=c(unique(df.subset$phylum)),
+          high=c(unique(df.subset$phylum)),
+      na.value="grey90", 
+      limits = c(0,100))+
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
               strip.text.y = element_text(angle = 0))+
         ggtitle(paste0(df.subset$seaweed_id))
@@ -256,9 +261,7 @@ server <- function(input, output) {
     ##### render image of selected seaweed ######
     output$Imagen<- renderImage({
       Leg<-paste0("./Data/images/", print(c(unique(input$seaweed_species))), ".JPG")
-          list(src=Leg, width = "100a%",
-               height = "100%",
-               alt = "photo of selected algae (if we have a photo).")
+          list(src=Leg, alt = "photo of selected algae (if we have a photo).", style="width: 500px")
     }, deleteFile = FALSE)   
     
     
