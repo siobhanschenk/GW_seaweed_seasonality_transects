@@ -120,10 +120,10 @@ ui <- fluidPage(
       HTML('<h4>Volunteers </h4>',
         '<p>We want to say a huge thank you to all the people who donated their time to help us collect these data. 
            In particular: 
-           Andrea Jackman, Dr. Bridgette Clarkston, Connor Wardrop,
-           Emma Jourdain, Emma Menchions, Evan Kohn,
-           Garrett Ainsworth-Cruickshank, MJ Herrin, Reilly Perovich,
-           Risa Ogushi, Ryan Ju, Tobin Sparling, Vincent Billy</p>'),
+           Andrea Jackman, Dr. Bridgette Clarkston, Connor Wardrop, 
+        Emma Jourdain, Emma Menchions, Evan Kohn, Garrett Ainsworth-Cruickshank, 
+        MJ Herrin, Reilly Perovich, Risa Ogush, Elliott Evans, 
+        Tobin Sparling, Vincent Billy</p>'),
       br(),
       
       ),
