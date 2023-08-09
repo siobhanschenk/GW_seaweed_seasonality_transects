@@ -129,10 +129,13 @@ ui <- fluidPage(
       <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">https://doi.org/10.5683/SP3/IKGB6E, </a>Borealis</i> 
       This Borealis link will have the latest data release</p>'),
       
-      # download button for raw data
-      downloadLink('downloadRawData', 'Download the raw data for the app here'),
       
-      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>'), 
+      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>',
+           
+           '<p><a href = "https://github.com/siobhanschenk/GW_seaweed_seasonality_transects">GitHub</a> with the app data and code</p>'),
+      
+      # download button for raw data
+      #downloadLink('downloadRawData', 'Link to GitHub with the app data and code'),
       
       br(),
       
