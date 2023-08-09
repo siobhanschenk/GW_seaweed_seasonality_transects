@@ -7,14 +7,15 @@ library(tidyverse)
 library(plyr)
 library(stringi)
 library(data.table)
+library(ggpubr)
 library(ggplot2); theme_set(theme_bw()+
                               theme(panel.grid = element_blank(),
                                     strip.background = element_rect(fill="white"),
                                     axis.text = element_text(size = 15, face="bold"),
                                     axis.title = element_text(size=20, face="bold"),
                                     strip.text = element_text(size = 12, face="bold"),
-                                    legend.text=element_text(size=15),
-                                    legend.title=element_text(size=15, face="bold"),
+                                    legend.text=element_text(size=12),
+                                    legend.title=element_text(size=12, face="bold"),
                                     plot.title = element_text(size=20, face="italic")))
 
 ## load data
@@ -48,7 +49,7 @@ keeplist = ddply(algae.wide.grouped, c("seaweed_id"),
                   summarize,
                   occurance = sum(as.numeric(yn)))
 
-keeplist = subset(keeplist, keeplist$occurance>4)
+keeplist = subset(keeplist, keeplist$occurance>=2)
 
 keeplist = c(unique(keeplist$seaweed_id))
 
@@ -96,6 +97,14 @@ repro.wide$month <- stri_replace_all_regex(repro.wide$month,
                                                    vectorize=FALSE)
 ## set order of month
 repro.wide$month = factor(repro.wide$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
+
+## calculate the mean reproductive occurence per month ###
+repro.year.sum = ddply(repro.wide, c("seaweed_id", "month"),
+                       summarise,
+                       year.sum = sum(reproductive_yn),
+                       year.N = length(year)) %>%
+  mutate(percent_years = year.sum/year.N)
+
 
 
 
@@ -181,10 +190,14 @@ ui <- fluidPage(
              
              '<p> <i> Note (2):</i> The fill scale changes for each seaweed species. Make sure to check the color scale bar on the right of the plot when comparing relative abundances.</p>',
              
-             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). *Photos by Varoon P. Supratya.</p>',
+             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). *Photos by Varoon P. Supratya.</p>'),
+       
+       br(),
              
-             '<h4><b><i>Laminariales</i> (kelp) Reproductive Timing Plot Tab</b></h4>',
-             '<p>Shows opportunisitc collection of reproductive state of <i>Laminariales</i> (kelp). Times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. Reproductive status of other seaweeds was not recorded.</p>'
+             
+             HTML('<h4><b><i>Laminariales</i> (kelp) Reproductive Timing Plot Tab</b></h4>',
+             '<p>Shows opportunisitc collection of reproductive state of <i>Laminariales</i> (kelp). Times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. Reproductive status of other seaweeds was not recorded.</p>',
+             '<i>Note (1):</i> The error "replacement has 1 row, data has 0" occurs when algae with no reproductive data available are selected.</p>'
              ),
       
         
@@ -295,16 +308,62 @@ server <- function(input, output) {
       ## subset data from user input 
       repro.subset <- subset(repro.wide, seaweed_id == input$seaweed_species)
       
-      ##### make reproduction plot ######
-      ggplot(repro.subset, aes(x=month, y=as.factor(year), fill=as.factor(reproductive_yn)))+
+      ## replace 0 and 1 with no and yes for reproduction
+      repro.subset$reproductive_yn <- stri_replace_all_regex(repro.subset$reproductive_yn,
+                                                 pattern=c("0","1"),
+                                                 replacement=c("No", "Yes"),
+                                                 vectorize=FALSE)
+      
+      ##### make reproduction plot - for individual years ######
+      singleyears = ggplot(repro.subset, aes(x=month, y=as.factor(year), fill=reproductive_yn))+
+       geom_point(cex=5, pch=21)+
+        #geom_tile()+
+       # ggtitle(paste0(repro.subset$seaweed_id))+
+       scale_fill_manual(values=c("grey95", "black"))+
+        labs(y="Observation Year", x="Observation Month", fill="Kelp Reproductive?")
+      
+      # Extract the legend. Returns a gtable
+      singleyearsleg <- get_legend(singleyears)
+      # Convert to a ggplot and print
+      singleyearsleg=as_ggplot(singleyearsleg)
+      # remove legend for real plot
+      singleyears = singleyears + theme(legend.position = "none")
+      
+      
+      ##### make reproduction plot - for all years together ######
+      
+      ## subset data from user input 
+      repro.gy <- subset(repro.year.sum, seaweed_id == input$seaweed_species)
+      
+      ## add placeholder year for plots to align
+      repro.gy$year = "2022"
+      
+      allyears = ggplot(repro.gy, aes(x=month, y=year, fill=as.numeric(percent_years)))+
         geom_tile()+
-        ggtitle(paste0(repro.subset$seaweed_id))+
-        scale_fill_manual(values=c("white", "darkgoldenrod4"))+
-        labs(y="Observation Year", x="Observation Month", fill="Kelp Reproductive 
-      (no = 0 /yes = 1)")
+        ggtitle(paste0(repro.gy$seaweed_id))+
+        scale_fill_gradient(low="cornsilk", high="darkgoldenrod4")+
+        labs(y="All Years", x=" ", 
+             fill="Percent of survey years  
+where reproductive 
+individuals were 
+observed (by month)")+
+        theme(axis.text.y = element_text(color="white"),
+              axis.text.x = element_blank())
+      
+      # Extract the legend. Returns a gtable
+      allyearsleg <- get_legend(allyears)
+      # Convert to a ggplot and print
+      allyearsleg=as_ggplot(allyearsleg)
+      # remove legend for real plot
+      allyears = allyears + theme(legend.position = "none")
+      
+      ## arrange plots
+      ggarrange(allyears, allyearsleg, singleyears, singleyearsleg,
+                ncol=2, nrow=2, widths = c(0.75, 0.3, 0.75, 0.3), heights = c(0.1, 0.1, 1.5, 1.5))
       
       
-    },height = 700, width = 700 )
+    },height = 500, width = 950
+    )
     
     ###### downlaod and save plot ######
     output$downloadPlot <- downloadHandler(
