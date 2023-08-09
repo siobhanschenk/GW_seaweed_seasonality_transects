@@ -19,11 +19,12 @@ library(ggplot2); theme_set(theme_bw()+
 
 ## load data
 algae.wide = read.csv("./Data/GW_seaweed_transects_data_cleaned.csv")
+reproduction = read.csv("./Data/kelp_reproductive_timing.csv", header=T, na.strings=c("","NA"))
 commonnames = read.csv("./Data/GW_common_names.csv")
 
 
 
-##### FORMAT DATA FOR ANALYSIS ####
+##### FORMAT TRANSECT DATA FOR ANALYSIS ####
 
 ## summarize data across years for the same transect and month
 algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","seaweed_id","phylum","month", "year"), 
@@ -74,10 +75,28 @@ speclist = algae.wide.grouped$seaweed_id
 speclist = unique(speclist)
 
 
-## subset by phylum
-#brown = subset(algae.wide.grouped, algae.wide.grouped$phylum=="brown")
-#green = subset(algae.wide.grouped, algae.wide.grouped$phylum=="green")
-#red = subset(algae.wide.grouped, algae.wide.grouped$phylum=="red")
+##### FORMAT REPRODUCTION DATA FOR ANALYSIS #######
+## replace NAs with 0 
+reproduction[is.na(reproduction)] <- 0
+
+## pivot longer to make seaweed_id column
+repro.wide = pivot_longer(reproduction, cols = c(4:7),
+                         names_to = "seaweed_id",
+                         values_to ="reproductive_yn")
+
+## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
+repro.wide$month <- stri_replace_all_regex(repro.wide$month,
+                                                   pattern=c("3","4","5","6","7","8","9","10","11","12"),
+                                                   replacement=c("Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."),
+                                                   vectorize=FALSE)
+
+repro.wide$month <- stri_replace_all_regex(repro.wide$month,
+                                                   pattern=c("1","2"),
+                                                   replacement=c("Jan.", "Feb."),
+                                                   vectorize=FALSE)
+## set order of month
+repro.wide$month = factor(repro.wide$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
+
 
 
 ###### UI CODE #######
@@ -135,11 +154,12 @@ ui <- fluidPage(
       mainPanel(
         
         ##### more plot text ######
-        HTML("<h4>The plot below shows the mean percent cover (acorss sampling years) of the select seaweed.</h4>") ,
-        
+        HTML("<h3><b>Choose a seaweed to plot</b> *see bottom of page for common names and photos of the seaweed)</h3>") ,
+      
         ##### Input: Selector for choosing dataset ----
-        selectInput('seaweed_species',
-                    label = 'Choose a seaweed to plot (see bottom of page for common names)',
+       
+       selectInput('seaweed_species',
+                    label = '',
                     choices = c(speclist),
                     selected="selected_seaweed"),
         
@@ -147,7 +167,9 @@ ui <- fluidPage(
         
         ##### plot text info ######
         
-        HTML('<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
+        HTML('<h4><b>Abundance Plot Tab: Shows the abundance of the selected seaweed by month and year</b></h4>',
+             
+             '<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
              '<p> <i> Note (1):</i> <b>Grey</b> boxes indicate that the algae was
@@ -156,44 +178,53 @@ ui <- fluidPage(
              
              '<p> <i> Note (2):</i> The fill scale changes for each seaweed species. Make sure to check the color scale bar on the right of the plot when comparing relative abundances.</p>',
              
-             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). *Photos by Varoon P. Supratya.</p>'
+             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). *Photos by Varoon P. Supratya.</p>',
+             
+             '<h4><b><i>Laminariales</i> (kelp) Reproductive Timing Plot Tab</b></h4>',
+             '<p>Shows opportunisitc collection of reproductive state of <i>Laminariales</i> (kelp). Times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. Reproductive status of other seaweeds was not recorded.</p>'
              ),
       
         
         downloadButton('downloadPlot', 'Download Plot'),
         
-        plotOutput("distPlot", width = "90%"),
+        tabsetPanel(type="tabs",
+                    tabPanel("Abundance Plot", plotOutput("distPlot", width = "90%")),
+                    tabPanel("Laminariales (kelp) Reproductive Timing Plot", plotOutput("reproPlot", width="90%"))
+                    ),
+       
+       ## move the table down
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       br(),
+       
+       
+       HTML('<h4>Table showing the latin binomial and common names for seaweeds</h4>'),
+       
+       ##### set up table ######
+       tableOutput('table'),
         
         ##### move image #######
         br(),
         br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
-        br(),
+
 
       #  HTML('<p>Below is a photo of the seaweed species being plotted (<i>photos by us</i>).</p>'),
         
         imageOutput(outputId="Imagen"),
-        
-        br(),
-        br(),
-        
-        HTML('<h4>Table showing the latin binomial and common names for seaweeds</h4>'),
-        
-        ##### set up table ######
-        tableOutput('table'),
+
 
         
         ##### leave space at the bottom of the page #####
@@ -218,7 +249,7 @@ server <- function(input, output) {
       content = function(con) {write.csv(algae, con)})
 
     
-    ##### make plot by user input #######
+    ##### ALGAE ABUNDANCE - plot by user input #######
     output$distPlot <- renderPlot({
       
       
@@ -234,7 +265,7 @@ server <- function(input, output) {
       df.subset$mean <- ifelse(df.subset$mean==0,NA,df.subset$mean)
       
       
-      ##### make bubble plot of abundance ######
+      ##### make heatmap  of abundance ######
       ggplot(df.subset, aes(x=month, y=distance_along_transect_m, fill=mean))+
         geom_tile(color = "grey50", lwd = 0.5, linetype = 1)+
         labs(x="Sampling Month", y="Distance From Seawall (m)", 
@@ -244,7 +275,7 @@ server <- function(input, output) {
         scale_fill_gradient2(
           low=c(unique(df.subset$phylum)),
           high=c(unique(df.subset$phylum)),
-      na.value="grey90", 
+      na.value="grey95", 
      # limits = c(0,100)
       )+
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
@@ -254,9 +285,27 @@ server <- function(input, output) {
       
       },height = 700, width = 700 )
     
+    ##### KELP REPRODUCTION - plot by user input #######
+    output$reproPlot <- renderPlot({
+      
+      
+      ## subset data from user input 
+      repro.subset <- subset(repro.wide, seaweed_id == input$seaweed_species)
+      
+      ##### make reproduction plot ######
+      ggplot(repro.subset, aes(x=month, y=as.factor(year), fill=as.factor(reproductive_yn)))+
+        geom_tile()+
+        ggtitle(paste0(repro.subset$seaweed_id))+
+        scale_fill_manual(values=c("white", "darkgoldenrod4"))+
+        labs(y="Observation Year", x="Observation Month", fill="Kelp Reproductive 
+      (no = 0 /yes = 1)")
+      
+      
+    },height = 700, width = 700 )
+    
     ###### downlaod and save plot ######
     output$downloadPlot <- downloadHandler(
-      filename =  "seaweed_abundance_transect_plot.png",
+      filename =  "seaweed_plot.png",
       content=function(file){
         device <-function(..., width, height) {
           grDevices::png(..., width=width, height=height, res=500, 

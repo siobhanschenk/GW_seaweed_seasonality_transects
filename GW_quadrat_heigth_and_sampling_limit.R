@@ -14,11 +14,11 @@ library(ggplot2)+theme_set(theme_bw()+
                                    #axis.ticks = element_blank()
                              ))
 
+setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
 
-
-algae = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects/GW_seaweed_transects_data_cleaned.csv")
-std = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects/standpole_datasheet.csv")
-aug1 = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects/tide_obs_20230801.csv")
+algae = read.csv("GW_seaweed_transects_data_cleaned.csv")
+std = read.csv("standpole_datasheet.csv")
+aug1 = read.csv("tide_obs_20230801.csv")
 
 
 
@@ -95,3 +95,4 @@ height=ggplot(tideheights, aes(x=distance_from_seawall_m, y=quadrat_height, colo
 ggarrange(mintide, height, nrow=1,
           labels=c("A", "B"))
 
+ggsave("quadrat_height_by_distance.png", width=40, height = 15, units = "cm")
