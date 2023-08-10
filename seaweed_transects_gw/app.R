@@ -124,8 +124,8 @@ ui <- fluidPage(
       HTML('<h4>Data Information</h4>',
         '<p>These montly seaweed seasonality transcts were initiated and currently organized by 
       Siobhan and Varoon from the 
-      <a href="https://www.zoology.ubc.ca/~parfrey/parfrey_lab/">Parfrey</a> and 
-      <a href="https://www3.botany.ubc.ca/martone/">Martone</a>
+      <a href="https://www.zoology.ubc.ca/~parfrey/parfrey_lab/", target="_blank">Parfrey</a> and 
+      <a href="https://www3.botany.ubc.ca/martone/", target="_blank">Martone</a>
       labs at the Univeristy of British Columbia, Vancouver Campus.</p>',
       
       '<p>If you would like to take part in our seaweed survey, please email 
@@ -135,13 +135,13 @@ ui <- fluidPage(
       Please cite the data as:</p>
       <p><i>Long-term monitoring of macroalgal biodiversity in Stanley Park, Vancouver, British Columbia 
       Schenk, Siobhan; Supratya, Varoon P.; Martone, Patrick T.; Parfrey, Laura W. (2022) 
-      <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">https://doi.org/10.5683/SP3/IKGB6E, </a>Borealis</i> 
+      <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E", target="_blank">https://doi.org/10.5683/SP3/IKGB6E, </a>Borealis</i> 
       This Borealis link will have the latest data release</p>'),
       
       
-      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>',
+      HTML('<p>If you would like the most up to date data with the sampling protocol visit the <a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/IKGB6E", target="_blank">Borealis page</a> or email us at <i>seaweedsurvey@zoology.ubc.ca</i> </p>',
            
-           '<p><a href = "https://github.com/siobhanschenk/GW_seaweed_seasonality_transects">GitHub</a> with the app data and code</p>'),
+           '<p><a href = "https://github.com/siobhanschenk/GW_seaweed_seasonality_transects", target="_blank">GitHub</a> with the app data and code</p>'),
       
       # download button for raw data
       #downloadLink('downloadRawData', 'Link to GitHub with the app data and code'),
