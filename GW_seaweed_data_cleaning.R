@@ -1,7 +1,7 @@
 ##### IF YOU HAVEN'T INSTALLED PACKAGES RUN THIS, OTHERWISE SKIP IT #####
-install.packages("tidyverse")
-install.packages("plyr")
-install.packages("ggplot2")
+#install.packages("tidyverse")
+#install.packages("plyr")
+#install.packages("ggplot2")
 
 
 ##### WORKSPACE SET UP #####
@@ -19,8 +19,9 @@ setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Se
 
 ## read in data
 algae = read.csv("GW_seaweed_seasonality_transect_data.csv")
+heights = read.csv("tideheights_with_quadrat_height.csv")
 
-##### FORMAT DATA FOR ANALYSIS ####
+##### FORMAT DATA FOR ALGAL DATA FOR ANALYSIS ####
 ## remove transects 1 and 5
 algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 
@@ -79,11 +80,22 @@ print(once)
 ## replace "crusticorallina_sp"  in data with "crustose_coralline"
 algae.wide$seaweed_id=gsub("crusticorallina_sp", "crustose_coralline", algae.wide$seaweed_id)
 
+## remove unkonwn seaweed
+algae.wide = subset(algae.wide, algae.wide$seaweed_id!="unknown")
+
 ##### REMOVE SEAWEEDS ONLY FOUND ONCE FROM THE DATASET #####
 algae.wide.ns = subset(algae.wide, !(algae.wide$seaweed_id %in% c(once)))
 
-## save the cleaned file
-write.csv(algae.wide.ns, "GW_seaweed_transects_data_cleaned.csv")
+##### ADD THE QUADRAT HEIGHT BY STADIAPOLE ######
+## format the heigths file
+heights = heights[,c(2,3,12)]
+names(heights) <- c("transect_id", "distance_along_transect_m", "quadrat_height_m")
+
+## join with cleaned algal data
+algae.heights = full_join(heights, algae.wide.ns)
+
+##### save the cleaned file #####
+write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv")
 
 
 

@@ -26,9 +26,12 @@ commonnames = read.csv("./Data/GW_common_names.csv")
 
 
 ##### FORMAT TRANSECT DATA FOR ANALYSIS ####
+# round the quadrat heights to 0.5 m
+algae.wide$quadrat_height_m = round_any(algae.wide$quadrat_height_m, 0.1)
+
 
 ## summarize data across years for the same transect and month
-algae.wide.grouped = ddply(algae.wide, c("transect_id","distance_along_transect_m","seaweed_id","phylum","month", "year"), 
+algae.wide.grouped = ddply(algae.wide, c("quadrat_height_m","seaweed_id","phylum","month", "year"), 
                            summarise,
                            N = length(percent_cover), ## sample size
                            mean = mean(percent_cover),
@@ -181,7 +184,7 @@ ui <- fluidPage(
         
         HTML('<h4><b>Abundance Plot Tab: Shows the abundance of the selected seaweed by month and year</b></h4>',
              
-             '<p>The y-axis show the distance of the quadrat from the seawall. The x-axis shows the month of sampling.
+             '<p>The y-axis show the quadrat height in metres. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
              '<p> <i> Note (1):</i> <b>Grey</b> boxes indicate that the algae was
@@ -282,12 +285,11 @@ server <- function(input, output) {
       
       
       ##### make heatmap  of abundance ######
-      ggplot(df.subset, aes(x=month, y=distance_along_transect_m, fill=mean))+
+      ggplot(df.subset, aes(x=month, y=as.factor(quadrat_height_m), fill=mean))+
         geom_tile(color = "grey50", lwd = 0.5, linetype = 1)+
-        labs(x="Sampling Month", y="Distance From Seawall (m)", 
+        labs(x="Sampling Month", y="Quadrat Height (m)", 
              fill="Mean Percent Cover")+
-        facet_grid(paste0("transect ", df.subset$transect_id)~year, scales="free", space="free")+
-        scale_y_reverse()+
+        facet_grid(.~year, scales="free", space="free")+
         scale_fill_gradient2(
           low=c(unique(df.subset$phylum)),
           high=c(unique(df.subset$phylum)),
