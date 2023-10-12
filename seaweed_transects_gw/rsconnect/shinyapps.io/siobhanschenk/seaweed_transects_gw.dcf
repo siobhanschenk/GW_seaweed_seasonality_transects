@@ -1,0 +1,12 @@
+name: seaweed_transects_gw
+title: seaweed_transects_gw
+username: siobhanschenk
+account: siobhanschenk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10166742
+bundleId: 7792405
+url: https://siobhanschenk.shinyapps.io/seaweed_transects_gw/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

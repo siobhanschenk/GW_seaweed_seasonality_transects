@@ -199,8 +199,9 @@ ui <- fluidPage(
              
              
              HTML('<h4><b><i>Laminariales</i> (kelp) Reproductive Timing Plot Tab</b></h4>',
-             '<p>Shows opportunisitc collection of reproductive state of <i>Laminariales</i> (kelp). Times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. Reproductive status of other seaweeds was not recorded.</p>',
-             '<i>Note (1):</i> The error "replacement has 1 row, data has 0" occurs when algae with no reproductive data available are selected.</p>'
+             '<p>Shows opportunisitc collection of reproductive state of <i>Laminariales</i> (kelp). 
+             Times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. 
+             Reproductive status of other seaweeds was not recorded.</p>'
              ),
       
         
@@ -306,10 +307,29 @@ server <- function(input, output) {
     ##### KELP REPRODUCTION - plot by user input #######
     output$reproPlot <- renderPlot({
       
-      
       ## subset data from user input 
       repro.subset <- subset(repro.wide, seaweed_id == input$seaweed_species)
       
+      ##### SET UP DESCISION TO PLOT REPRODUCTION DATAT OR NOT #####
+      ## count occurence of reproduction data
+      descision = sum(as.numeric(repro.subset$reproductive_yn))
+      
+      ## were any seaweeds reproductive?
+      if(descision<1){
+        ## no observations
+        ggplot(repro.subset, aes(x=input$seaweed_species, y = reproductive_yn))+
+          geom_point()+
+          annotate("text", x = 0.1, y = 0.1, label = "No reproductive data available for this seaweed", size=10)+
+          theme(axis.text = element_blank(), 
+                axis.title = element_blank(),
+                axis.ticks = element_blank())
+
+      } ## end of if
+      else {
+        ## some observations (make plot)
+      
+      
+      ##### MAKE PLOTS FOR REPRODUCTION #####
       ## replace 0 and 1 with no and yes for reproduction
       repro.subset$reproductive_yn <- stri_replace_all_regex(repro.subset$reproductive_yn,
                                                  pattern=c("0","1"),
@@ -362,8 +382,9 @@ observed (by month)")+
       ## arrange plots
       ggarrange(allyears, allyearsleg, singleyears, singleyearsleg,
                 ncol=2, nrow=2, widths = c(0.75, 0.3, 0.75, 0.3), heights = c(0.1, 0.1, 1.5, 1.5))
+      } ## end of else 
       
-      
+      ## end parentheses for  output$reproPlot <- renderPlot({
     },height = 500, width = 950
     )
     
