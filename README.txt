@@ -51,10 +51,14 @@ year: sampling year
 month: sampling month
 day: sampling day
 
+Before November 2023
 The remaining columns indicate the genus.species of the seaweed (all kelps, Laminariales).
 A "y" indicates that reproductive individuals were observed on that sampling occasion. 
 Please note that an absence of "y" does not indicate no reproductive individuals and that species not listed here do not mean the species was never reproductive. 
 These are opportunistic observations and kelp (Laminariales) reproductive tissue is easy to spot compared to other seaweeds. 
+
+Starting November 2023
+We changed our prptocol to a timed (5 min) search for reproductive individuals at the water line between transect 3 and 4. These data can be converted to presence/abscence data, but if left as is, they convey differences in the number of reproductive kelps on given sampling days. 
 /
 
 // poster_schenk_suprayata_psa2023 //
