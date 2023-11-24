@@ -21,88 +21,44 @@ library(ggplot2)+theme_set(theme_bw()+
                                    legend.key=element_blank()))
 
 ## tell R where to get the data
-setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Freshet Saccharina/github_spring_freshet_saccharina_latissima/1-sf_imput_data")
-path = "C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Freshet Saccharina/github_spring_freshet_saccharina_latissima/results_abiotic"
+setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - TempLoggers Data")
+path = "C:/Users/siobh/OneDrive - The University Of British Columbia/Project - TempLoggers Data/SF_2022_temp_loggers_raw/"
   
-  
+
+## remove days up to and including deployment 
+# high deployed on 2022-03-22
+# low deployed on 2022-04-19
+
 ## read in data
-tempdata =read.csv("2022_temp_logger_data.csv")
-#tblow = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Freshet Saccharina/spring_freshet_field_work_data_2022/SF_2022_temp_loggers_raw/tb_low_formatted.csv")
-#tempdata = full_join(tempdata, tblow)
-
+temp_obs_high = read.csv("SF_2022_temp_loggers_raw/gw-04E8 0200 4022 09-20230604 130423.csv")
+temp_obs_low = read.csv("SF_2022_temp_loggers_raw/gw-0407 B200 5E42 08-20220712 110552.csv")
+#temps_early = read.csv("SF_2022_temp_loggers_raw/2022_temp_logger_data.csv")
 logger_elevation <- read.csv("logger_elevation.csv")
-#fraser_discharge = https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/ ## this is from ferdous thesis
-## tide observations files read in and merged
-tide_obs <- list.files(path = "C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Freshet Saccharina/github_spring_freshet_saccharina_latissima/1-sf_imput_data/tide_observations",  # Identify all CSV files
-                       pattern = "*.csv", full.names = TRUE) %>% 
-  lapply(read_csv, show_col_types = FALSE) %>%                              # Store all files in list
-  bind_rows                                         # Combine data sets into one data set 
-tide_obs                                           # Print data to RStudio console
-
 
 
 ##### FORMAT THE TEMPERATURE LOGGER DATA #####
-## remove bad data
-tempdata = subset(tempdata, tempdata$keep=="yes" & tempdata$site %in% c("gw-high","gw-low"))
+## merge temps
+temps = full_join(temp_obs_low, temp_obs_high)
 
+
+## correct UTC by DAYLIHT SAVINGS TIME
 ## set variable format
-tempdata$datetime.utc = as.POSIXct(tempdata$datetime.utc, format="%Y-%m-%d %H:%M")
-tempdata$datetime.pdt = as.POSIXct(tempdata$datetime.pdt, format="%Y-%m-%d %H:%M")
-tempdata$temp = as.numeric(tempdata$temp)
+temps$datetime.utc = as.POSIXct(temps$datetime.utc, format="%Y-%m-%d %H:%M")
+temps$date.utc = substr(temps$datetime.utc, start = 1, stop = 10)
 
-## split columns
-tempdata = separate(data = tempdata, 
-                         col = site, 
-                         into = c("site","position"), 
-                         sep = "-")
+## separate date column
+temps = separate(temps, col=date.utc, c("year", "month", "day"), sep="-")
 
-## rename sites
-site_id <- c(gw="GW", cp="CP", tb="TB", scp="SCP")
-tempdata$site <- as.character(site_id[tempdata$site])
-
-##### FORMAT THE TIDE DATA #####
-## rename observations columns
-names(tide_obs)[names(tide_obs)=="observations(m)"]<-"tide_height_m"
-
-## split the dates column
-tide_obs = tide_obs %>%
-  separate(col=Date,
-           sep=" ",
-           into=c("date", "time", "timezone"))
-
-## get date and time together to make datetime colums
-tide_obs$datetime.pdt = paste(tide_obs$date,tide_obs$time)
-
-## format datetime 
-tide_obs$datetime.pdt = as.POSIXct(tide_obs$datetime.pdt, format="%Y-%m-%d %H:%M")
-
-
-##### MERGE THE DATAFRAMES TOGETHER AND ADD UNDERWATER VARIABLE  ######
-
-## merge
-full_tide = full_join(tide_obs, tempdata)
-                  
-full_tide = full_join(full_tide, logger_elevation)
-
-## remove ones with missing info
-full_tide = subset(full_tide, full_tide$site=="GW" & full_tide$temp !="NA")
-
-
-## add underwater variable
-full_tide$underwater <- if_else(full_tide$elevation_m < full_tide$tide_height_m, "yes", "no")
-
-
-##### SELECT THE TOP 5 WARMEST AND COLDEST MEASURE FOR EVERY POSITION AND DAY #####
-
+##### SELECT 5 WARMEST OBSERVATIONS EACH DAY ######
 ## make groups
-full_tide$daygroups = paste0(full_tide$site, full_tide$position, full_tide$date)
+temps$daygroups = paste0(temps$site, temps$height, "-",temps$year, temps$month, temps$day)
 
 ## get list of groups
-groups = c(unique(full_tide$daygroups))
+groups = c(unique(temps$daygroups))
 
 ## get temp extremes
 ## sort data by relative abundance
-sorted = full_tide[order(-full_tide$temp),]
+sorted = temps[order(-temps$temp),]
 
 ## make empty dataframe to store data
 temp.df = NULL
@@ -145,14 +101,51 @@ for(i in groups) {
 }
 
 
-##### calculate the mean +/- SD for each group
-temps.grouped = ddply(temp.df, c("site","position","date", "place"), 
-                        summarise,
-                        N.temp = length(temp), ## sample size
-                        mean.temp = mean(temp), ## mean
-                        sd.temp = sd(temp))%>% ## standard deviation) %>%
-  mutate(se.temp = sd.temp/sqrt(N.temp), ## standard error
-         lci.temp = mean.temp - 1.960*(se.temp), ## lower bound of 95% confidence interval
-         uci.temp = mean.temp + 1.960*(se.temp)) ## upper bound of 95% confidence interval
+##### PLOT THE TEMPS BY HEIGHT ######
+temp.df$samp.date = as.Date(paste0(temp.df$year, "-", temp.df$month, "-", temp.df$day))
+
+ggplot(temp.df, aes(x=samp.date, y=temp, color=height))+
+  geom_smooth(linewidth=2, se=F)+
+  scale_color_manual(values=c("#1E90FF","#000080"))
+
+##### READ IN TRANSECT DATA #####
+algae = read.csv("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects/GW_seaweed_transects_data_cleaned.csv")
+
+## get interesting subsets
+interesting = subset(algae, algae$seaweed_id %in% 
+                       c("ulva_sp","petalonia_fascia","saccharina_latissima","nereocystis_luetkeana",
+                         "alaria_marginata","costaria_costata","laminariales_juvenile_recruits") &
+                       algae$percent_cover>0)
+
+## get max heights by smapling day
+in.max = ddply(interesting, c("year", "month", "day", "seaweed_id"),
+               summarise,
+               max.height = max(quadrat_height_m))
+## get date
+in.max$samp.date = as.Date(paste0(in.max$year, "-", in.max$month, "-", in.max$day))
+
+#### plot algae max height  ####
+ggplot(in.max, aes(x=samp.date, y=max.height, color=seaweed_id))+
+  geom_smooth(se=F, linewidth=2)+
+  scale_color_manual(values=c("#D2B48C", "#BC8F8F", "#F4A460","#B8860B",
+                              "#9932CC", "#D2691E", "#7CFC00"))
+
+##### combine plots ######
+temp.df$year = as.numeric(temp.df$year)
+temp.df$month = as.numeric(temp.df$month)
+temp.df$day = as.numeric(temp.df$day)
+
+algaetemps = full_join(in.max, temp.df)
+
+coeff = 0.1
+
+ggplot(algaetemps, aes(x=samp.date))+
+  geom_smooth(aes(y=temp, linetype=height), se=F)+
+  geom_point(aes(y=max.height/coeff, color=seaweed_id), cex=3)+
+  scale_y_continuous(name="Logger Temps",
+                     sec.axis = sec_axis(~.*coeff, name="Algae max height"))+
+  scale_color_manual(values=c("#D2B48C", "#BC8F8F", "#F4A460","#B8860B",
+                              "#9932CC", "#D2691E", "#7CFC00", "white"))
+
 
 

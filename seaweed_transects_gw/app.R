@@ -46,19 +46,19 @@ algae.wide.grouped$mean[is.na(algae.wide.grouped$mean)]<-0
 
 
 ## add yes/no variable to remove seaweeds only counted 2 or less times
-algae.wide.grouped$yn = ifelse(algae.wide.grouped$mean > 0, "1", "0")
+#algae.wide.grouped$yn = ifelse(algae.wide.grouped$mean > 0, "1", "0")
 
-keeplist = ddply(algae.wide.grouped, c("seaweed_id"),
-                  summarize,
-                  occurance = sum(as.numeric(yn)))
+#keeplist = ddply(algae.wide.grouped, c("seaweed_id"),
+     #             summarize,
+     #             occurance = sum(as.numeric(yn)))
 
-keeplist = subset(keeplist, keeplist$occurance>=2)
+#keeplist = subset(keeplist, keeplist$occurance>=2)
 
-keeplist = c(unique(keeplist$seaweed_id))
+#keeplist = c(unique(keeplist$seaweed_id))
 
 
 ## subset out low occurance
-algae.wide.grouped = subset(algae.wide.grouped, algae.wide.grouped$seaweed_id %in% c(keeplist))
+#algae.wide.grouped = subset(algae.wide.grouped, algae.wide.grouped$seaweed_id %in% c(keeplist))
 
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
 algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
@@ -87,6 +87,11 @@ reproduction[is.na(reproduction)] <- 0
 repro.wide = pivot_longer(reproduction, cols = c(4:7),
                          names_to = "seaweed_id",
                          values_to ="reproductive_yn")
+
+## make reproduction data be 0 or 1
+repro.wide$reproductive_yn=if_else(repro.wide$reproductive_yn>0, "1", "0")
+
+repro.wide$reproductive_yn = as.numeric(repro.wide$reproductive_yn)
 
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
 repro.wide$month <- stri_replace_all_regex(repro.wide$month,
@@ -199,8 +204,10 @@ ui <- fluidPage(
              
              
              HTML('<h4><b><i>Laminariales</i> (kelp) Reproductive Timing Plot Tab</b></h4>',
-             '<p>Shows opportunisitc collection of reproductive state of <i>Laminariales</i> (kelp). 
-             Times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. 
+             '<p>Shows presence/abscence of reproductive <i>Laminariales</i> (kelp).
+             From the start of data up to (and including) October 2023, we only recorded presence/abscence data.
+             Starting in November 2023, we started counting the number of reproductive individuals during a time search but we only present presence/abscence data here. See Borealis for more details.
+             With both types or reprdutive data, times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. 
              Reproductive status of other seaweeds was not recorded.</p>'
              ),
       

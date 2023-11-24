@@ -88,11 +88,11 @@ algae.wide.ns = subset(algae.wide, !(algae.wide$seaweed_id %in% c(once)))
 
 ##### ADD THE QUADRAT HEIGHT BY STADIAPOLE ######
 ## format the heigths file
-heights = heights[,c(2,3,12)]
-names(heights) <- c("transect_id", "distance_along_transect_m", "quadrat_height_m")
+heights.sub = heights[,c(1,2,15)]
+#names(heights) <- c("transect_id", "distance_along_transect_m", "quadrat_height_m")
 
 ## join with cleaned algal data
-algae.heights = full_join(heights, algae.wide.ns)
+algae.heights = full_join(heights.sub, algae.wide.ns)
 
 ##### save the cleaned file #####
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv")

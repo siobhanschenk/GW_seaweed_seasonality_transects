@@ -1,4 +1,4 @@
-﻿transect_id,distance_from_seawall_m,standiapole_height_m,time_PDT,year,month,day,correction,height_measure,extrapolated_quadrat_height_m
+﻿transect_id,distance_along_transect_m,standiapole_height_m,time_PDT,year,month,day,correction,height_measure,extrapolated_quadrat_height_m
 2,0,2.55,13:27,2023,8,13,none,real,
 2,5,2.03,13:28,2023,8,13,vh,real,
 2,10,1.9,13:28,2023,8,13,vh,real,
