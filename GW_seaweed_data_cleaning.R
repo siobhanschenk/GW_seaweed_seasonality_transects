@@ -94,8 +94,10 @@ heights.sub = heights[,c(1,2,15)]
 ## join with cleaned algal data
 algae.heights = full_join(heights.sub, algae.wide.ns)
 
+algae.heights = subset(algae.heights, algae.heights$seaweed_id !="X")
+
 ##### save the cleaned file #####
-write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv")
+write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
 
 
 

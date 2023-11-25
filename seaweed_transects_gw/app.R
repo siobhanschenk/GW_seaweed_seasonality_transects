@@ -189,7 +189,7 @@ ui <- fluidPage(
         
         HTML('<h4><b>Abundance Plot Tab: Shows the abundance of the selected seaweed by month and year</b></h4>',
              
-             '<p>The y-axis show the quadrat height in metres. The x-axis shows the month of sampling.
+             '<p>The y-axis show the tide height at which the quadrat is exposed to air. The x-axis shows the month of sampling.
              The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
              
              '<p> <i> Note (1):</i> <b>Grey</b> boxes indicate that the algae was
@@ -295,7 +295,7 @@ server <- function(input, output) {
       ##### make heatmap  of abundance ######
       ggplot(df.subset, aes(x=month, y=as.factor(quadrat_height_m), fill=mean))+
         geom_tile(color = "grey50", lwd = 0.5, linetype = 1)+
-        labs(x="Sampling Month", y="Quadrat Height (m)", 
+        labs(x="Sampling Month", y="Tide height at which the quadrat is exposed to air (m)", 
              fill="Mean Percent Cover")+
         facet_grid(.~year, scales="free", space="free")+
         scale_fill_gradient2(
