@@ -21,6 +21,13 @@ setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Se
 algae = read.csv("GW_seaweed_seasonality_transect_data.csv")
 heights = read.csv("tideheights_with_quadrat_height.csv")
 
+
+###### PLOT QUADRAT HEIGHTS ######
+ggplot(heights, aes(y=quadrat_height_m, x=distance_along_transect_m, color=as.factor(transect_id)))+
+  geom_point()+
+  geom_line(se=F)
+
+
 ##### FORMAT DATA FOR ALGAL DATA FOR ANALYSIS ####
 ## remove transects 1 and 5
 algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
@@ -88,7 +95,7 @@ algae.wide.ns = subset(algae.wide, !(algae.wide$seaweed_id %in% c(once)))
 
 ##### ADD THE QUADRAT HEIGHT BY STADIAPOLE ######
 ## format the heigths file
-heights.sub = heights[,c(1,2,15)]
+heights.sub = heights[,c(1,2,11)]
 #names(heights) <- c("transect_id", "distance_along_transect_m", "quadrat_height_m")
 
 ## join with cleaned algal data
