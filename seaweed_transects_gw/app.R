@@ -44,22 +44,6 @@ algae.wide.grouped = ddply(algae.wide, c("quadrat_height_m","seaweed_id","phylum
 algae.wide.grouped$mean[is.na(algae.wide.grouped$mean)]<-0
 
 
-
-## add yes/no variable to remove seaweeds only counted 2 or less times
-#algae.wide.grouped$yn = ifelse(algae.wide.grouped$mean > 0, "1", "0")
-
-#keeplist = ddply(algae.wide.grouped, c("seaweed_id"),
-     #             summarize,
-     #             occurance = sum(as.numeric(yn)))
-
-#keeplist = subset(keeplist, keeplist$occurance>=2)
-
-#keeplist = c(unique(keeplist$seaweed_id))
-
-
-## subset out low occurance
-#algae.wide.grouped = subset(algae.wide.grouped, algae.wide.grouped$seaweed_id %in% c(keeplist))
-
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
 algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
                                               pattern=c("3","4","5","6","7","8","9","10","11","12"),
@@ -190,7 +174,8 @@ ui <- fluidPage(
         HTML('<h4><b>Abundance Plot Tab: Shows the abundance of the selected seaweed by month and year</b></h4>',
              
              '<p>The y-axis show the tide height at which the quadrat is exposed to air. The x-axis shows the month of sampling.
-             The facets on the y-axis break up the data by transect number, since there are three transects.</p>',
+             The facets on the y-axis break up the data by transect number, since there are three transects. We plot the chart datum quadrat height (m)
+             on the y-axis, which is the same thing as measuring the tide height at which the quadrat is exposed to air. In essence, a larger chart datum number means higher up in the intertidal zone (shallower water).</p>',
              
              '<p> <i> Note (1):</i> <b>Grey</b> boxes indicate that the algae was
              not found in the quadrat. <b>Empty</b> regions (where the heatmap grid from 0 to n metres from the seawall ends) on the graph indicate that there is no data available for that transect for that month.
@@ -210,14 +195,24 @@ ui <- fluidPage(
              With both types or reprdutive data, times where reproduction was not reccorded should not be regarded as a true abscence of reproductive individuals. 
              Reproductive status of other seaweeds was not recorded.</p>'
              ),
+       
+       br(),
+       
+       HTML('<h4><b>Site Gradient Tab</b></h4>',
+            '<p>Shows the slope of each of the three transects individually. 
+            We plot the distance from the seawall on the x-axis with the chart datum quadrat height (m) on the on the y-axis. 
+            Each point on the line represents a quadrat.
+            We indicate the approximate intertidal zones (Very High to Low), which we determined by the presence of particular seaweeds. 
+            This plot links to the heatmap in the first tab by their y-axes, which are the same.</p>'
+       ),
       
         
         downloadButton('downloadPlot', 'Download Plot'),
         
         tabsetPanel(type="tabs",
                     tabPanel("Abundance Plot", plotOutput("distPlot", width = "90%")),
-                    tabPanel("Laminariales (kelp) Reproductive Timing Plot", plotOutput("reproPlot", width="90%"))
-                    ),
+                    tabPanel("Laminariales (kelp) Reproductive Timing Plot", plotOutput("reproPlot", width="90%")),
+                    tabPanel("Site Gradient",imageOutput(outputId="TransImg"))),
        
        ## move the table down
        br(),
@@ -295,7 +290,7 @@ server <- function(input, output) {
       ##### make heatmap  of abundance ######
       ggplot(df.subset, aes(x=month, y=as.factor(quadrat_height_m), fill=mean))+
         geom_tile(color = "grey50", lwd = 0.5, linetype = 1)+
-        labs(x="Sampling Month", y="Tide height at which the quadrat is exposed to air (m)", 
+        labs(x="Sampling Month", y="Chart datum quadrat height (m)", 
              fill="Mean Percent Cover")+
         facet_grid(.~year, scales="free", space="free")+
         scale_fill_gradient2(
@@ -411,6 +406,12 @@ observed (by month)")+
           list(src=Leg, alt = "photo of selected algae (if we have a photo).", style="width: 500px")
     }, deleteFile = FALSE)   
     
+    
+    ##### REMNDER IMAGE OF TRANSECT SLOPE PLOT #####
+    output$TransImg <- renderImage({
+      tr<-("./Data/transect_slope_image.jpg")
+      list(src=tr, alt="Graph of slopes for all 3 transects", style="width: 1000px")
+    }, deleteFile = FALSE)
     
     ####### create table of common names ######
     output$table = renderTable(commonnames)
