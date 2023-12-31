@@ -5,7 +5,7 @@ account: siobhanschenk
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6734438
-bundleId: 8095962
+bundleId: 8097895
 url: https://siobhanschenk.shinyapps.io/algae_transects_stanley_park/
 asMultiple: FALSE
 asStatic: FALSE

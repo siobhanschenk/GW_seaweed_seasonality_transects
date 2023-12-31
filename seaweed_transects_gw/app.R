@@ -19,8 +19,8 @@ library(ggplot2); theme_set(theme_bw()+
                                     plot.title = element_text(size=20, face="italic")))
 
 ## load data from Borealis https://doi.org/10.5683/SP3/IKGB6E
-algae.wide = read_csv("https://olrc2.scholarsportal.info/dataverse/10.5683/SP3/IKGB6E/18c07c7a8bf-293f36b60062?response-content-disposition=attachment%3B%20filename%2A%3DUTF-8%27%27GW_seaweed_transects_data_cleaned.csv&response-content-type=text%2Fcsv&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20231230T234640Z&X-Amz-SignedHeaders=host&X-Amz-Expires=7200&X-Amz-Credential=33b141c798354e21a3394e9e4f546bbe%2F20231230%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=df90b4cdd53eac3296ad304a63daf6a7b94f6efe16ae24cf3b900c3f0ba3bdb3")
-reproduction = read_csv("https://olrc2.scholarsportal.info/dataverse/10.5683/SP3/IKGB6E/18bfa3c70af-5413985a68af.orig?response-content-disposition=attachment%3B%20filename%2A%3DUTF-8%27%27kelp_reproductive_timing.csv&response-content-type=text%2Fcsv&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20231230T234911Z&X-Amz-SignedHeaders=host&X-Amz-Expires=7200&X-Amz-Credential=33b141c798354e21a3394e9e4f546bbe%2F20231230%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=3cf267b18cab01f3aea0c0b2bfa28f2adc3f13595db953d92f67e1083f199aa7")
+algae.wide = read_csv("./Data/GW_seaweed_transects_data_cleaned.csv")
+reproduction = read_csv("./Data/kelp_reproductive_timing.csv")
 
 ## read in local common names table
 commonnames = read.csv("./Data/GW_common_names.csv")
