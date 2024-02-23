@@ -31,13 +31,16 @@ commonnames = read.csv("./Data/GW_common_names.csv")
 # round the quadrat heights to 0.5 m
 algae.wide$quadrat_height_m = round_any(algae.wide$quadrat_height_m, 0.1)
 
+## replace NAs in percent cover with 0
+algae.wide$percent_cover[is.na(algae.wide$percent_cover)]<-0
+
 
 ## summarize data across years for the same transect and month
 algae.wide.grouped = ddply(algae.wide, c("quadrat_height_m","seaweed_id","phylum","month", "year"), 
                            summarise,
                            N = length(percent_cover), ## sample size
-                           mean = mean(percent_cover),
-                           sd = sd(percent_cover)) %>%
+                           mean = mean(as.numeric(percent_cover)),
+                           sd = sd(as.numeric(percent_cover))) %>%
   mutate(se = sd/sqrt(N), ## standard error
          lci = mean - 1.960*(se), ## lower bound of 95% confidence interval
          uci = mean + 1.960*(se))

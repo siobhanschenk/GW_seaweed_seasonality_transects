@@ -1,7 +1,7 @@
 ##### IF YOU HAVEN'T INSTALLED PACKAGES RUN THIS, OTHERWISE SKIP IT #####
 #install.packages("tidyverse")
 #install.packages("plyr")
-#install.packages("ggplot2")
+#install.packages("readxl")
 
 
 ##### WORKSPACE SET UP #####
@@ -9,6 +9,7 @@
 ## load packages
 library(tidyverse)
 library(plyr)
+library(readxl)
 library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
                                    axis.text.y = element_text(size=12, face="bold"),
                                    axis.title.x = element_text(size=15, face="bold"),
@@ -18,14 +19,14 @@ library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
 setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
 
 ## read in data
-algae = read.csv("GW_seaweed_seasonality_transect_data.csv")
+algae = read_excel("GW_seaweed_seasonality_transect_data.xlsx")
 heights = read.csv("tideheights_with_quadrat_height.csv")
 
 
 ###### PLOT QUADRAT HEIGHTS ######
 ggplot(heights, aes(y=quadrat_height_m, x=distance_along_transect_m, color=as.factor(transect_id)))+
   geom_point()+
-  geom_line(se=F)
+  geom_line()
 
 
 ##### FORMAT DATA FOR ALGAL DATA FOR ANALYSIS ####
@@ -40,7 +41,7 @@ n=ncol(algae)
 algae[,9:n] <- sapply(algae[,c(9:n)], as.numeric)
 
 ## fill empty cells (instances of 0 percnet cover) with 0
-algae[is.na(algae)]<-0
+#algae[is.na(algae)]<-0
 
 ## pivot data. This is important for plotting and analysis later
 algae.wide = algae %>% 
