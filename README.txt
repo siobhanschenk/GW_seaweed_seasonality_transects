@@ -80,3 +80,7 @@ This document outlines our current engagement with the Indigenous peoples whose 
 //tide_obs_20230801 //
 OBSERVED tide height downloaded from tides.gc.ca to match the observed tide height to the measured quadrat height with the stand poles.
 /
+
+//ulva_beaty_herbarium_accession //
+File with the UBC Beaty Biodiversity Museum Accession information (Accession Number column) for 15 Ulva sp. individuals originally collected for Paul Gabrielson
+/
