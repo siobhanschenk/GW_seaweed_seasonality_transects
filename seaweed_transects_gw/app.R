@@ -125,8 +125,8 @@ ui <- fluidPage(
       <a href="https://www3.botany.ubc.ca/martone/", target="_blank">Martone</a>
       labs at the Univeristy of British Columbia, Vancouver Campus.</p>',
       
-      '<p>If you would like to take part in our seaweed survey, please email 
-      <i>seaweedsurvey@zoology.ubc.ca</i> </p>',
+      '<p>If you would like to take part in our seaweed survey, please email us! 
+      <i>varoonp@student.ubc.ca</i> and <i>sschenk@student.ubc.ca</i></p>',
       
       '<p>You are free to use these data in your research as long as attribution is given.
       Please cite the data as:</p>
