@@ -104,6 +104,16 @@ algae.heights = full_join(heights.sub, algae.wide.ns)
 
 algae.heights = subset(algae.heights, algae.heights$seaweed_id !="X")
 
+
+#### fix time colum ####
+algae.heights = separate(algae.heights,
+                         col = "low_tide_time_local_time",
+                         into = c("trash", "low_tide_time_local_time"),
+                         sep=" ")
+
+
+algae.heights = algae.heights[,-c(7)]
+
 ##### save the cleaned file #####
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
 

@@ -20,7 +20,7 @@ library(ggplot2); theme_set(theme_bw()+
 
 ## load data from Borealis https://doi.org/10.5683/SP3/IKGB6E
 algae.wide = read_csv("./Data/GW_seaweed_transects_data_cleaned.csv")
-reproduction = read_csv("./Data/kelp_reproductive_timing.csv")
+reproduction = read_csv("./Data/clean_reproductive_data.csv")
 
 ## read in local common names table
 commonnames = read.csv("./Data/GW_common_names.csv")
@@ -70,37 +70,37 @@ speclist = unique(speclist)
 
 ##### FORMAT REPRODUCTION DATA FOR ANALYSIS #######
 ## replace NAs with 0 
-reproduction[is.na(reproduction)] <- 0
+#reproduction[is.na(reproduction)] <- 0
 
 ## pivot longer to make seaweed_id column
-repro.wide = pivot_longer(reproduction, cols = c(4:7),
-                         names_to = "seaweed_id",
-                         values_to ="reproductive_yn")
+# repro.wide = pivot_longer(reproduction, cols = c(4:7),
+#                          names_to = "seaweed_id",
+#                          values_to ="any_repro")
 
 ## make reproduction data be 0 or 1
-repro.wide$reproductive_yn=if_else(repro.wide$reproductive_yn>0, "1", "0")
+#repro.wide$any_repro=if_else(repro.wide$any_repro>0, "1", "0")
 
-repro.wide$reproductive_yn = as.numeric(repro.wide$reproductive_yn)
+#repro.wide$any_repro = as.numeric(repro.wide$any_repro)
 
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
-repro.wide$month <- stri_replace_all_regex(repro.wide$month,
+reproduction$month <- stri_replace_all_regex(reproduction$month,
                                                    pattern=c("3","4","5","6","7","8","9","10","11","12"),
                                                    replacement=c("Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."),
                                                    vectorize=FALSE)
 
-repro.wide$month <- stri_replace_all_regex(repro.wide$month,
+reproduction$month <- stri_replace_all_regex(reproduction$month,
                                                    pattern=c("1","2"),
                                                    replacement=c("Jan.", "Feb."),
                                                    vectorize=FALSE)
 ## set order of month
-repro.wide$month = factor(repro.wide$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
+reproduction$month = factor(reproduction$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
 
-## calculate the mean reproductive occurence per month ###
-repro.year.sum = ddply(repro.wide, c("seaweed_id", "month"),
-                       summarise,
-                       year.sum = sum(reproductive_yn),
-                       year.N = length(year)) %>%
-  mutate(percent_years = year.sum/year.N)
+# ## calculate the mean reproductive occurence per month ###
+# repro.year.sum = ddply(repro.wide, c("seaweed_id", "month"),
+#                        summarise,
+#                        year.sum = sum(any_repro),
+#                        year.N = length(year)) %>%
+#   mutate(percent_years = year.sum/year.N)
 
 
 
@@ -188,7 +188,7 @@ ui <- fluidPage(
              
              '<p> <i> Note (2):</i> The fill scale changes for each seaweed species. Make sure to check the color scale bar on the right of the plot when comparing relative abundances.</p>',
              
-             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). *Photos by Varoon P. Supratya.</p>'),
+             '<p> <i> Note (3): <i> Below the plot, we show a photo of the selected seaweed (if we have one). We also include some notes that are part of our field identification criteria for each seaweed *Photos by Varoon P. Supratya or Siobhan Schenk unless indicated otherwise.</p>'),
        
        br(),
              
@@ -240,7 +240,7 @@ ui <- fluidPage(
        
        HTML('<h4>Table showing the latin binomial and common names for seaweeds</h4>'),
        
-       ##### set up table ######
+        #### set up table ######
        tableOutput('table'),
         
         ##### move image #######
@@ -251,6 +251,9 @@ ui <- fluidPage(
       #  HTML('<p>Below is a photo of the seaweed species being plotted (<i>photos by us</i>).</p>'),
         
         imageOutput(outputId="Imagen"),
+      br(),
+      br(),
+      br(),
 
 
         
@@ -315,16 +318,16 @@ server <- function(input, output) {
     output$reproPlot <- renderPlot({
       
       ## subset data from user input 
-      repro.subset <- subset(repro.wide, seaweed_id == input$seaweed_species)
+      repro.subset <- subset(reproduction, species == input$seaweed_species)
       
       ##### SET UP DESCISION TO PLOT REPRODUCTION DATAT OR NOT #####
       ## count occurence of reproduction data
-      descision = sum(as.numeric(repro.subset$reproductive_yn))
+      descision = sum(as.numeric(repro.subset$any_repro))
       
       ## were any seaweeds reproductive?
       if(descision<1){
         ## no observations
-        ggplot(repro.subset, aes(x=input$seaweed_species, y = reproductive_yn))+
+        ggplot(repro.subset, aes(x=input$seaweed_species, y = any_repro))+
           geom_point()+
           annotate("text", x = 0.1, y = 0.1, label = "No reproductive data available for this seaweed", size=10)+
           theme(axis.text = element_blank(), 
@@ -338,13 +341,13 @@ server <- function(input, output) {
       
       ##### MAKE PLOTS FOR REPRODUCTION #####
       ## replace 0 and 1 with no and yes for reproduction
-      repro.subset$reproductive_yn <- stri_replace_all_regex(repro.subset$reproductive_yn,
+      repro.subset$any_repro <- stri_replace_all_regex(repro.subset$any_repro,
                                                  pattern=c("0","1"),
                                                  replacement=c("No", "Yes"),
                                                  vectorize=FALSE)
       
       ##### make reproduction plot - for individual years ######
-      singleyears = ggplot(repro.subset, aes(x=month, y=as.factor(year), fill=reproductive_yn))+
+      singleyears = ggplot(repro.subset, aes(x=month, y=as.factor(year), fill=any_repro))+
        geom_point(cex=5, pch=21)+
         #geom_tile()+
        # ggtitle(paste0(repro.subset$seaweed_id))+
@@ -357,38 +360,10 @@ server <- function(input, output) {
       singleyearsleg=as_ggplot(singleyearsleg)
       # remove legend for real plot
       singleyears = singleyears + theme(legend.position = "none")
-      
-      
-      ##### make reproduction plot - for all years together ######
-      
-      ## subset data from user input 
-      repro.gy <- subset(repro.year.sum, seaweed_id == input$seaweed_species)
-      
-      ## add placeholder year for plots to align
-      repro.gy$year = "2022"
-      
-      allyears = ggplot(repro.gy, aes(x=month, y=year, fill=as.numeric(percent_years)))+
-        geom_tile()+
-        ggtitle(paste0(repro.gy$seaweed_id))+
-        scale_fill_gradient(low="cornsilk", high="darkgoldenrod4")+
-        labs(y="All Years", x=" ", 
-             fill="Percent of survey years  
-where reproductive 
-individuals were 
-observed (by month)")+
-        theme(axis.text.y = element_text(color="white"),
-              axis.text.x = element_blank())
-      
-      # Extract the legend. Returns a gtable
-      allyearsleg <- get_legend(allyears)
-      # Convert to a ggplot and print
-      allyearsleg=as_ggplot(allyearsleg)
-      # remove legend for real plot
-      allyears = allyears + theme(legend.position = "none")
-      
+    
       ## arrange plots
-      ggarrange(allyears, allyearsleg, singleyears, singleyearsleg,
-                ncol=2, nrow=2, widths = c(0.75, 0.3, 0.75, 0.3), heights = c(0.1, 0.1, 1.5, 1.5))
+      ggarrange(singleyears, singleyearsleg,
+                ncol=2, nrow=2, widths = c(0.75, 0.3), heights = c(0.1, 0.1))
       } ## end of else 
       
       ## end parentheses for  output$reproPlot <- renderPlot({
@@ -408,7 +383,8 @@ observed (by month)")+
     ##### render image of selected seaweed ######
     output$Imagen<- renderImage({
       Leg<-paste0("./Data/images/", print(c(unique(input$seaweed_species))), ".JPG")
-          list(src=Leg, alt = "photo of selected algae (if we have a photo).", style="width: 500px")
+          list(src=Leg, alt = "photo of selected algae (if we have a photo). These photos include some identifying characteristics we use in the field", 
+               style="width: 1000px")
     }, deleteFile = FALSE)   
     
     

@@ -2,7 +2,7 @@
 library(readxl)
 library(tidyverse)
 library(plyr)
-library(ggplot2)+theme_set(theme_bw()+
+library(ggplot2)+theme_set(theme_classic()+
                              theme(strip.background = element_rect(fill="white"),
                                    axis.text.y = element_text(colour = "black", size = 12, face = "bold"),
                                    axis.text.x = element_text(colour = "black", face = "bold", size = 12),
@@ -39,30 +39,34 @@ sum_phenology = ddply(raw_phenology, c("species","sampling_date"),
 ##### BUBBLE GRAPHS #####
 
 ## all the kelps
-ggplot(raw_phenology, aes(x=blade_width_cm, y=length_cm, fill=species))+
-  geom_point(pch=21, alpha=0.7, cex=3)+
-  scale_fill_manual(values=c("#D98880","#6E2C00","#F4D03F","#B7950B"))+
- # scale_size(range=c(3,10))+
-  guides(fill = guide_legend(override.aes = list(size = 5)))+
-  geom_smooth(aes(color=species), method="lm", se=F)+
-  scale_color_manual(values=c("#D98880","#6E2C00","#F4D03F","#B7950B"))
+ggplot(raw_phenology, aes(x=as.numeric(blade_width_cm), y=length_cm, color=visible_sori))+
+  geom_point(alpha=0.7, cex=3)+
+  scale_color_manual(values=c("#D98880","#6E2C00"))+
+  facet_wrap(.~species, scales="free")
 
 ## all the kelps
-ggplot(raw_phenology, aes(x=length_cm, y=mass_g, fill=species))+
-  geom_point(pch=21, alpha=0.7, cex=3)+
-  scale_fill_manual(values=c("#D98880","#6E2C00","#F4D03F","#B7950B"))+
-  # scale_size(range=c(3,10))+
-  guides(fill = guide_legend(override.aes = list(size = 5)))+
-  geom_smooth(aes(color=species), method="lm", se=F, linewidth=2)+
-  scale_color_manual(values=c("#D98880","#6E2C00","#F4D03F","#B7950B"))
+ggplot(raw_phenology, aes(x=as.numeric(blade_width_cm), y=mass_g, 
+                          color=visible_sori))+
+  geom_point(alpha=0.7, cex=3)+
+  scale_color_manual(values=c("#D98880","#6E2C00"))+
+  facet_wrap(.~species, scales="free")
 
 
 ## nereo
 nereo = subset(raw_phenology, raw_phenology$species=="nereo")
 
-ggplot(nereo, aes(x=nereo_stipe_length_cm, y = nereo_pneumatocyst_width_cm))+
-  geom_point(pch=21, cex=3, aes(fill=as.factor(day)))+
-  geom_smooth(se=F)
+ggplot(nereo, aes(x=nereo_stipe_length_cm, y = nereo_pneumatocyst_width_cm, 
+                  color=visible_sori))+
+  geom_point(cex=3)
+
+
+ggplot(nereo, aes(x=(nereo_stipe_length_cm), y=(length_cm), 
+                  color=visible_sori))+
+  geom_point(cex=3)
+
+ggplot(nereo, aes(x=(length_cm), y = nereo_pneumatocyst_width_cm, 
+                  color=visible_sori))+
+  geom_point(cex=3)
 
 
 ##### LINE GRAPHS #####
