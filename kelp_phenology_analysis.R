@@ -44,6 +44,7 @@ ggplot(raw_phenology, aes(x=as.numeric(blade_width_cm), y=length_cm, color=visib
   scale_color_manual(values=c("#D98880","#6E2C00"))+
   facet_wrap(.~species, scales="free")
 
+
 ## all the kelps
 ggplot(raw_phenology, aes(x=as.numeric(blade_width_cm), y=mass_g, 
                           color=visible_sori))+
