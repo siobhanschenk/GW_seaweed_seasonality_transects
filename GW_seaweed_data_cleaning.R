@@ -57,7 +57,11 @@ algae.wide = separate(data = algae.wide,
                           sep = "__")
 
 ## make all the ulva_ be ulva_sp
-algae.wide$seaweed_id=gsub("ulva_*", "ulva_sp__", algae.wide$seaweed_id)
+algae.wide$seaweed_id=gsub("ulva_*", "ulvoid_sp__", algae.wide$seaweed_id)
+
+## fix Ahnfeltia fastigiata
+algae.wide$seaweed_id=gsub("ahnfeltia_sp", "ahnfeltia_fastigiata", algae.wide$seaweed_id)
+
 
 ## separate out old ulva species names
 algae.wide = separate(data = algae.wide, 
@@ -69,9 +73,10 @@ algae.wide = separate(data = algae.wide,
 algae.wide = algae.wide[,-c(8,10)]
 
 
-
 ## remove times where percent coover is 0
 algae.wide.sub = subset(algae.wide, algae.wide$percent_cover >0)
+
+algae.wide.sub$seaweed_id = gsub("ulva_sp", "ulvoid_sp", algae.wide.sub$seaweed_id)
 
 ## summarize data to get list of seaweeds only found once
 algae.wide.grouped = ddply(algae.wide.sub, c("seaweed_id"), 
@@ -87,12 +92,13 @@ print(once)
 
 ## replace "crusticorallina_sp"  in data with "crustose_coralline"
 algae.wide$seaweed_id=gsub("crusticorallina_sp", "crustose_coralline", algae.wide$seaweed_id)
+algae.wide$seaweed_id=gsub("lithothamnion_sp", "crustose_coralline", algae.wide$seaweed_id)
 
 ## remove unkonwn seaweed
 algae.wide = subset(algae.wide, algae.wide$seaweed_id!="unknown")
 
-##### REMOVE SEAWEEDS ONLY FOUND ONCE FROM THE DATASET #####
-algae.wide.ns = subset(algae.wide, !(algae.wide$seaweed_id %in% c(once)))
+##### REMOVE SEAWEEDS ONLY FOUND ONCE AND THAT DON'T MAKE SENSE FROM THE DATASET #####
+algae.wide.ns = subset(algae.wide, !(algae.wide$seaweed_id %in% c("plocamium_sp")))
 
 ##### ADD THE QUADRAT HEIGHT BY STADIAPOLE ######
 ## format the heigths file

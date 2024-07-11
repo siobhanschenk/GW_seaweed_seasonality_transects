@@ -8,6 +8,7 @@ library(plyr)
 library(stringi)
 library(data.table)
 library(ggpubr)
+#library(reticulate)
 library(ggplot2); theme_set(theme_bw()+
                               theme(panel.grid = element_blank(),
                                     strip.background = element_rect(fill="white"),
@@ -17,6 +18,8 @@ library(ggplot2); theme_set(theme_bw()+
                                     legend.text=element_text(size=12),
                                     legend.title=element_text(size=12, face="bold"),
                                     plot.title = element_text(size=20, face="italic")))
+
+#source_python("borealis_updater.py")
 
 ## load data from Borealis https://doi.org/10.5683/SP3/IKGB6E
 algae.wide = read_csv("./Data/GW_seaweed_transects_data_cleaned.csv")
