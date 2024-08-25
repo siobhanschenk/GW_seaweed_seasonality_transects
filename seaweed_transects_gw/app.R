@@ -8,7 +8,7 @@ library(plyr)
 library(stringi)
 library(data.table)
 library(ggpubr)
-#library(reticulate)
+library(readxl)
 library(ggplot2); theme_set(theme_bw()+
                               theme(panel.grid = element_blank(),
                                     strip.background = element_rect(fill="white"),
@@ -23,7 +23,7 @@ library(ggplot2); theme_set(theme_bw()+
 
 ## load data from Borealis https://doi.org/10.5683/SP3/IKGB6E
 algae.wide = read_csv("./Data/GW_seaweed_transects_data_cleaned.csv")
-reproduction = read_csv("./Data/clean_reproductive_data.csv")
+reproduction = read_excel("./Data/kelp_reproductive_timing.xlsx")
 
 ## read in local common names table
 commonnames = read.csv("./Data/GW_common_names.csv")
@@ -72,18 +72,9 @@ speclist = unique(speclist)
 
 
 ##### FORMAT REPRODUCTION DATA FOR ANALYSIS #######
-## replace NAs with 0 
-#reproduction[is.na(reproduction)] <- 0
+reproduction = reproduction %>% pivot_longer(cols=c(4:7), names_to="seaweed_id", values_to="repro_yn")
+reproduction$repro_yn = ifelse(reproduction$repro_yn>0, "1", "0")
 
-## pivot longer to make seaweed_id column
-# repro.wide = pivot_longer(reproduction, cols = c(4:7),
-#                          names_to = "seaweed_id",
-#                          values_to ="any_repro")
-
-## make reproduction data be 0 or 1
-#repro.wide$any_repro=if_else(repro.wide$any_repro>0, "1", "0")
-
-#repro.wide$any_repro = as.numeric(repro.wide$any_repro)
 
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
 reproduction$month <- stri_replace_all_regex(reproduction$month,
@@ -97,14 +88,6 @@ reproduction$month <- stri_replace_all_regex(reproduction$month,
                                                    vectorize=FALSE)
 ## set order of month
 reproduction$month = factor(reproduction$month, levels=c("Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."))
-
-# ## calculate the mean reproductive occurence per month ###
-# repro.year.sum = ddply(repro.wide, c("seaweed_id", "month"),
-#                        summarise,
-#                        year.sum = sum(any_repro),
-#                        year.N = length(year)) %>%
-#   mutate(percent_years = year.sum/year.N)
-
 
 
 
@@ -150,11 +133,8 @@ ui <- fluidPage(
       
       HTML('<h4>Volunteers </h4>',
         '<p>We want to say a huge thank you to all the people who donated their time to help us collect these data. 
-           In particular: 
-           Andrea Jackman, Alex Choinski, Dr. Bridgette Clarkston, Connor Wardrop, 
-        Emma Jourdain, Emma Menchions, Evan Kohn, Garrett Ainsworth-Cruickshank, 
-        MJ Herrin, Reilly Perovich, Risa Ogush, Elliott Evans, 
-        Tobin Sparling, Vincent Billy</p>'),
+        In particular: Alex Choinski, Andrea Jackman, Dr. Bridgette Clarkston, Connor Wardrop, Emma Jourdain, Emma Menchions, 
+        Evan Kohn, Garrett Ainsworth-Cruickshank, MJ Herrin, Reilly Perovich, Risa Ogush, Elliott Evans, Tobin Sparling, Vincent Billy</p>'),
       br(),
       
       ),
@@ -321,16 +301,18 @@ server <- function(input, output) {
     output$reproPlot <- renderPlot({
       
       ## subset data from user input 
-      repro.subset <- subset(reproduction, species == input$seaweed_species)
+      repro.subset <- subset(reproduction, seaweed_id == input$seaweed_species)
+      
       
       ##### SET UP DESCISION TO PLOT REPRODUCTION DATAT OR NOT #####
       ## count occurence of reproduction data
-      descision = sum(as.numeric(repro.subset$any_repro))
+      descision = sum(as.numeric(repro.subset$repro_yn))
       
       ## were any seaweeds reproductive?
       if(descision<1){
         ## no observations
-        ggplot(repro.subset, aes(x=input$seaweed_species, y = any_repro))+
+        ggplot(repro.subset, aes(x=input$seaweed_id, 
+                                 y = repro_yn))+
           geom_point()+
           annotate("text", x = 0.1, y = 0.1, label = "No reproductive data available for this seaweed", size=10)+
           theme(axis.text = element_blank(), 
@@ -344,18 +326,16 @@ server <- function(input, output) {
       
       ##### MAKE PLOTS FOR REPRODUCTION #####
       ## replace 0 and 1 with no and yes for reproduction
-      repro.subset$any_repro <- stri_replace_all_regex(repro.subset$any_repro,
-                                                 pattern=c("0","1"),
-                                                 replacement=c("No", "Yes"),
-                                                 vectorize=FALSE)
+       # repro.subset$any_repro <- stri_replace_all_regex(repro.subset$repro_yn,
+       #                                           pattern=c("0","1"),
+       #                                           replacement=c("No", "Yes"),
+       #                                           vectorize=FALSE)
       
       ##### make reproduction plot - for individual years ######
-      singleyears = ggplot(repro.subset, aes(x=month, y=as.factor(year), fill=any_repro))+
-       geom_point(cex=5, pch=21)+
-        #geom_tile()+
-       # ggtitle(paste0(repro.subset$seaweed_id))+
-       scale_fill_manual(values=c("grey95", "black"))+
-        labs(y="Observation Year", x="Observation Month", fill="Kelp Reproductive?")
+      singleyears = ggplot(repro.subset, aes(x=month, y=as.factor(year), color=repro_yn))+
+       geom_point(cex=5, pch=19)+
+       scale_color_manual(values=c("grey95", "black"))+
+        labs(y="Observation Year", x="Observation Month", color="Kelp Reproductive (1=yes, 0=no)")
       
       # Extract the legend. Returns a gtable
       singleyearsleg <- get_legend(singleyears)
