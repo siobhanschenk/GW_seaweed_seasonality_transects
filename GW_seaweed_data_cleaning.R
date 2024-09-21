@@ -38,14 +38,14 @@ algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 n=ncol(algae)
 
 ## make all algae abundance columns numeric 
-algae[,9:n] <- sapply(algae[,c(9:n)], as.numeric)
+algae[,16:n] <- sapply(algae[,c(16:n)], as.numeric)
 
 ## fill empty cells (instances of 0 percnet cover) with 0
 #algae[is.na(algae)]<-0
 
 ## pivot data. This is important for plotting and analysis later
 algae.wide = algae %>% 
-  pivot_longer(-c(1:8))
+  pivot_longer(-c(1:15))
 
 ## rename value column
 names(algae.wide)[names(algae.wide)=="value"]<-"percent_cover"
@@ -70,7 +70,7 @@ algae.wide = separate(data = algae.wide,
                       sep = "__")
 
 ## remove old ulva names and the donimant seaweed column
-algae.wide = algae.wide[,-c(8,10)]
+algae.wide = algae.wide[,-c(8,17)]
 
 
 ## remove times where percent coover is 0
