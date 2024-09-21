@@ -123,5 +123,6 @@ algae.heights = algae.heights[,-c(7)]
 ##### save the cleaned file #####
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
 
-
-
+write_rds(algae.heights, "app_transect_data.RDS")
+repro <- read_excel("kelp_reproductive_timing.xlsx")
+write_rds(repro, "app_repro_data.RDS")
