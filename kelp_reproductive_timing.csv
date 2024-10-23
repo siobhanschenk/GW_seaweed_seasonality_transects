@@ -1,4 +1,4 @@
-﻿year,month,day,saccharina,nereo,alaria,costaria,type_of_data
+﻿year,month,day,saccharina_latissima,nereocystis_luetkeana,alaria_marginata,costaria_costata,type_of_data
 2022,4,20,1,0,0,0,presence_abscence
 2022,5,19,0,1,0,0,presence_abscence
 2022,6,15,0,0,0,0,presence_abscence
@@ -23,3 +23,11 @@
 2024,1,22,0,0,0,0,time_search
 2024,2,9,0,0,0,0,time_search
 2024,2,19,0,0,0,0,time_search
+2024,3,10,0,0,0,0,presence_abscence
+2024,4,12,0,0,0,0,presence_abscence
+2024,5,11,0,1,0,1,presence_abscence
+2024,6,21,0,1,0,1,presence_abscence
+2024,7,22,0,1,1,1,presence_abscence
+2024,8,19,1,1,1,0,presence_abscence
+2024,9,16,1,0,1,0,presence_abscence
+2024,10,18,1,1,1,0,presence_abscence

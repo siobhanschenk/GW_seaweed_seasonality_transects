@@ -19,14 +19,32 @@ library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
 setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
 
 ## read in data
-algae = read_excel("GW_seaweed_seasonality_transect_data.xlsx")
 heights = read.csv("tideheights_with_quadrat_height.csv")
-
-
-###### PLOT QUADRAT HEIGHTS ######
-ggplot(heights, aes(y=quadrat_height_m, x=distance_along_transect_m, color=as.factor(transect_id)))+
-  geom_point()+
-  geom_line()
+algae <- read_excel("GW_seaweed_seasonality_transect_data.xlsx", 
+                         col_types = c("numeric", "numeric", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "numeric", "text", "numeric", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "text", "numeric", "text", "text", 
+                                                "numeric", "text", "text", "text", 
+                                                "text", "text", "numeric", "numeric", 
+                                                "numeric", "text", "text", "text", 
+                                               "numeric", "text", "numeric", "text", 
+                                                 "numeric", "numeric", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "text", "text", "text", "text", "numeric", 
+                                                "text", "text", "numeric", "text", 
+                                                "text", "text", "text", "text", "text", 
+                                                 "text", "text", "numeric", "numeric", 
+                                                "numeric", "numeric", "text", "numeric", 
+                                                "text", "text", "numeric", "numeric", 
+                                                 "numeric", "numeric", "numeric", 
+                                                "numeric", "numeric", "text", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "numeric", "numeric", "numeric", 
+                                                "numeric", "numeric"))
 
 
 ##### FORMAT DATA FOR ALGAL DATA FOR ANALYSIS ####
@@ -38,14 +56,14 @@ algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 n=ncol(algae)
 
 ## make all algae abundance columns numeric 
-algae[,16:n] <- sapply(algae[,c(16:n)], as.numeric)
+algae[,9:n] <- sapply(algae[,c(9:n)], as.numeric)
 
 ## fill empty cells (instances of 0 percnet cover) with 0
 #algae[is.na(algae)]<-0
 
 ## pivot data. This is important for plotting and analysis later
 algae.wide = algae %>% 
-  pivot_longer(-c(1:15))
+  pivot_longer(-c(1:16))
 
 ## rename value column
 names(algae.wide)[names(algae.wide)=="value"]<-"percent_cover"
@@ -70,7 +88,7 @@ algae.wide = separate(data = algae.wide,
                       sep = "__")
 
 ## remove old ulva names and the donimant seaweed column
-algae.wide = algae.wide[,-c(8,17)]
+algae.wide = algae.wide[,-c(8,18)]
 
 
 ## remove times where percent coover is 0
@@ -123,6 +141,6 @@ algae.heights = algae.heights[,-c(7)]
 ##### save the cleaned file #####
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
 
-write_rds(algae.heights, "app_transect_data.RDS")
+write_rds(algae.heights, "seaweed_transects_gw/Data/app_transect_data.RDS")
 repro <- read_excel("kelp_reproductive_timing.xlsx")
-write_rds(repro, "app_repro_data.RDS")
+write_rds(repro, "seaweed_transects_gw/Data/app_repro_data.RDS")

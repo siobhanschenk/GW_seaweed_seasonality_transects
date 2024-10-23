@@ -63,7 +63,7 @@ ui <- fluidPage(
             
             HTML('<h3>Acknowledgements </h3>',
                  '<p>Dr. B. Clarkston for her invaluable help to identify macroalgae and suggestions on how to improve the study and data usability. </p>
-                <p> Volunteers who donated their time to help us collect these data. In particular: A. Choinski, A. Jackman, A. Simon, B. Clarkston, C. Wardrop, 
+                <p> Volunteers who donated their time to help us collect these data. In particular: A. Choinski, A. Jackman, A. Simon, B. Clarkston, C. Wardrop, E. Evans,
                  E. Jourdain, E. Menchions, E. Kohn, E. Porcher, G. Ainsworth-Cruickshank, N. Salland, MJ. Herrin, P. Lund, R. Burns, R. Perovich, R. Ogushi, V. Billy.</p>'),
             br(),
             
