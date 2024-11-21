@@ -27,10 +27,24 @@ algae.wide$quadrat_height_m=round(algae.wide$quadrat_height_m, digits = 1)
 ## replace NA wirh 0
 algae.wide$percent_cover[is.na(algae.wide$percent_cover)]<-0
 
+
+###### FIX THE HEIGHT AND MEAN CALUCLATION ####
+
+## remove 0
+algae.wide.no0 = subset(algae.wide, algae.wide$percent_cover>0)
+
 ## group to plot mean by height
-algae.wide.grouped = ddply(algae.wide, c("quadrat_height_m", "seaweed_id", "year","month","phylum"),
+algae.wide.grouped = ddply(algae.wide.no0, c("quadrat_height_m", "seaweed_id", "year","month","phylum"),
                            summarise,
                            mean = mean(percent_cover))
+
+## add all heights back in
+heights = algae.wide |> select("quadrat_height_m", "seaweed_id", "year","month","phylum")
+
+algae.wide.grouped = full_join(heights, algae.wide.grouped)
+
+
+###### FORMAT MONTHS ######
 
 ## use gsub to fix lables (need to separate because jan and Feb replace the 1 and 2 in Nov and Dec)
 algae.wide.grouped$month <- stri_replace_all_regex(algae.wide.grouped$month,
