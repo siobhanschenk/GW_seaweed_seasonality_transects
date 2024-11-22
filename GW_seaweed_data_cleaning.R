@@ -20,31 +20,13 @@ setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Se
 
 ## read in data
 heights = read.csv("tideheights_with_quadrat_height.csv")
-algae <- read_excel("GW_seaweed_seasonality_transect_data.xlsx", 
-                         col_types = c("numeric", "numeric", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "numeric", "text", "numeric", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "text", "numeric", "text", "text", 
-                                                "numeric", "text", "text", "text", 
-                                                "text", "text", "numeric", "numeric", 
-                                                "numeric", "text", "text", "text", 
-                                               "numeric", "text", "numeric", "text", 
-                                                 "numeric", "numeric", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "text", "text", "text", "text", "numeric", 
-                                                "text", "text", "numeric", "text", 
-                                                "text", "text", "text", "text", "text", 
-                                                 "text", "text", "numeric", "numeric", 
-                                                "numeric", "numeric", "text", "numeric", 
-                                                "text", "text", "numeric", "numeric", 
-                                                 "numeric", "numeric", "numeric", 
-                                                "numeric", "numeric", "text", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "numeric", "numeric", "numeric", 
-                                                "numeric", "numeric"))
+algae <- read_excel("GW_seaweed_seasonality_transect_data.xlsx")
+
+## create an invert datasets 
+invertsub = algae[,c(1:7, 9:16)]
+
+## only keep algae
+algae = algae[,c(1:7, 17:88)]
 
 
 ##### FORMAT DATA FOR ALGAL DATA FOR ANALYSIS ####
@@ -56,14 +38,14 @@ algae = subset(algae, algae$transect_id!=1& algae$transect_id!=5)
 n=ncol(algae)
 
 ## make all algae abundance columns numeric 
-algae[,9:n] <- sapply(algae[,c(9:n)], as.numeric)
+algae[,8:n] <- sapply(algae[,c(8:n)], as.numeric)
 
 ## fill empty cells (instances of 0 percnet cover) with 0
 #algae[is.na(algae)]<-0
 
 ## pivot data. This is important for plotting and analysis later
 algae.wide = algae %>% 
-  pivot_longer(-c(1:16))
+  pivot_longer(-c(1:7))
 
 ## rename value column
 names(algae.wide)[names(algae.wide)=="value"]<-"percent_cover"
@@ -87,8 +69,8 @@ algae.wide = separate(data = algae.wide,
                       into = c("seaweed_id","old_ulva"), 
                       sep = "__")
 
-## remove old ulva names and the donimant seaweed column
-algae.wide = algae.wide[,-c(8,18)]
+## remove old ulva names 
+algae.wide = algae.wide[,-c(9)]
 
 
 ## remove times where percent coover is 0
@@ -140,6 +122,7 @@ algae.heights = algae.heights[,-c(7)]
 
 ##### save the cleaned file #####
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
+write.csv(invertsub, "GW_substrate_invert_data.csv", row.names=F)
 
 write_rds(algae.heights, "seaweed_transects_gw/Data/app_transect_data.RDS")
 repro <- read_excel("kelp_reproductive_timing.xlsx")
