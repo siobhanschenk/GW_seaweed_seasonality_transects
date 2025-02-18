@@ -16,7 +16,7 @@ library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
                                    axis.title.y = element_text(size=15, face="bold")))
 
 ## tell R where to get the data. !!This is computer specific because it's where you downloaded the file
-setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
+#setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
 
 ## read in data
 heights = read.csv("tideheights_with_quadrat_height.csv")
@@ -125,5 +125,5 @@ write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALS
 write.csv(invertsub, "GW_substrate_invert_data.csv", row.names=F)
 
 write_rds(algae.heights, "seaweed_transects_gw/Data/app_transect_data.RDS")
-repro <- read_excel("kelp_reproductive_timing.xlsx")
+repro <- read.csv("kelp_reproductive_timing.csv")
 write_rds(repro, "seaweed_transects_gw/Data/app_repro_data.RDS")

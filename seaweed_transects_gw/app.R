@@ -3,10 +3,10 @@
 ##### WORKSPACE SET UP ######
 ## load packages
 library(shiny)
-library(tidyverse)
-library(plyr)
-library(stringi)
-library(data.table)
+#library(tidyverse)
+#library(plyr)
+#library(stringi)
+#library(data.table)
 library(ggpubr)
 library(ggplot2); theme_set(theme_bw()+
                                 theme(panel.grid = element_blank(),
@@ -50,7 +50,7 @@ ui <- fluidPage(
       <a href="https://www3.botany.ubc.ca/martone/", target="_blank">Martone</a>
       labs at the Univeristy of British Columbia, Vancouver Campus.</p>',
                  
-                 '<p>For information about the study, see our <strong>preprint on <a href="https://www.biorxiv.org/content/10.1101/2024.09.12.612793v2" target="_blank">BioRXiv</a></strong>. 
+                 '<p>For information about the study, see our <strong> <a href="https://doi.org/10.1139/cjb-2024-0109" target="_blank">published article in Botany</a></strong>. 
                  To download the raw data and access other study-related material, visit <a href="https://doi.org/10.5683/SP3/IKGB6E" target="_blank">Borealis</a>.</p>',
                  
                  '<p>To see how this app was built, visit <a href = "https://github.com/siobhanschenk/GW_seaweed_seasonality_transects", target="_blank">GitHub</a>.</p>',
