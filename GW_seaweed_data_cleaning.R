@@ -21,12 +21,14 @@ library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
 ## read in data
 heights = read.csv("tideheights_with_quadrat_height.csv")
 algae <- read_excel("GW_seaweed_seasonality_transect_data.xlsx")
+algaecols = ncol(algae)
+
 
 ## create an invert datasets 
 invertsub = algae[,c(1:7, 9:16)]
 
 ## only keep algae
-algae = algae[,c(1:7, 17:88)]
+algae = algae[,c(1:7, 17:algaecols)]
 
 
 ##### FORMAT DATA FOR ALGAL DATA FOR ANALYSIS ####
