@@ -77,7 +77,7 @@ reproduction$month = factor(reproduction$month, levels=c("Jan.", "Feb.", "Mar.",
 
 ## rotate data long
 repro.long = reproduction |> 
-  pivot_longer(cols = c(4:7),
+  pivot_longer(cols = c(4:8),
                names_to="seaweed_id",
                values_to = "repro_yn")
 ## convert to pres/abs

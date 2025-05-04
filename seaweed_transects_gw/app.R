@@ -3,19 +3,16 @@
 ##### WORKSPACE SET UP ######
 ## load packages
 library(shiny)
-#library(tidyverse)
-#library(plyr)
-#library(stringi)
-#library(data.table)
 library(ggpubr)
+library(plyr)
 library(ggplot2); theme_set(theme_bw()+
                                 theme(panel.grid = element_blank(),
                                       strip.background = element_rect(fill="white"),
-                                      axis.text = element_text(size = 15, face="bold"),
+                                      axis.text = element_text(size = 12),
                                       axis.title = element_text(size=20, face="bold"),
                                       strip.text = element_text(size = 12, face="bold"),
                                       legend.text=element_text(size=12),
-                                      legend.title=element_text(size=12, face="bold"),
+                                      legend.title=element_text(size=12),
                                       plot.title = element_text(size=20, face="italic")))
 
 
@@ -95,11 +92,13 @@ ui <- fluidPage(
              The facets on the y-axis break up the data by transect number, since there are three transects. We plot the chart datum quadrat height (m)
              on the y-axis, which is the same thing as measuring the tide height at which the quadrat is exposed to air. In essence, a larger chart datum number means higher up in the intertidal zone (shallower water).</p>',
                  
-                 '<p> <i> Note (1):</i> <b>Grey</b> boxes indicate that the algae was
+                 '<p> <i> Note for the heatmap (1):</i> <b>Grey</b> boxes indicate that the algae was
              not found in the quadrat. <b>Empty</b> regions (where the heatmap grid from 0 to n metres from the seawall ends) on the graph indicate that there is no data available for that transect for that month.
              This is because we could not sample due to the tide height, or other unforseen events.</p>' ,
                  
-                 '<p> <i> Note (2):</i> The fill scale changes for each seaweed species. Make sure to check the color scale bar on the right of the plot when comparing relative abundances.</p>'),
+                 '<p> <i> Note for the bubble plot (2):</i> We present a bubble plot for algae where the difference between the maximum and minimum relative abundance reccorded was less than 3.</p>' ,
+                 
+                 '<p> <i> Note (3):</i> The fill scale changes for each seaweed species. Make sure to check the color scale bar on the right of the plot when comparing relative abundances.</p>'),
             
             br(),
             
@@ -133,7 +132,7 @@ ui <- fluidPage(
 ##### SERVER CODE #####
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output){
 
     
     
@@ -143,15 +142,26 @@ server <- function(input, output) {
         
         ## subset data from user input 
         df.subset <- subset(algae.wide.grouped, seaweed_id == input$seaweed_species)
-        
-        ## use gsub to change phylum colors to better color
-        df.subset$phylum = gsub("brown", "darkgoldenrod4", df.subset$phylum)
-        df.subset$phylum = gsub("red", "maroon4", df.subset$phylum)
-        df.subset$phylum = gsub("green", "forestgreen", df.subset$phylum)
+      
         
         ## use to make the 0s white 
         df.subset$mean <- ifelse(df.subset$mean==0,NA,df.subset$mean)
         
+        ## count number of entries for the seaweed
+        count.algae = subset(df.subset, df.subset$mean>0)
+        count.algae = ddply(count.algae, c("seaweed_id"), summarise, 
+                            n_counts = length(mean), 
+                            max_mean = max(mean),
+                            min_mean = min(mean)) |> 
+          mutate(range = max_mean - min_mean)
+        
+        if(count.algae$range>3){
+          
+          ## use gsub to change phylum colors to better color
+          df.subset$phylum = gsub("brown", "darkgoldenrod4", df.subset$phylum)
+          df.subset$phylum = gsub("red", "maroon4", df.subset$phylum)
+          df.subset$phylum = gsub("green", "forestgreen", df.subset$phylum)
+
         ##### make heatmap  of abundance ######
         ggplot(df.subset, aes(x=month, y=as.factor(quadrat_height_m), fill=mean))+
             geom_tile(color = "grey50", lwd = 0.5, linetype = 1)+
@@ -165,10 +175,26 @@ server <- function(input, output) {
             )+
             theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
                   strip.text.y = element_text(angle = 0))+
-            ggtitle(paste0(df.subset$seaweed_id))
+            ggtitle(paste0(df.subset$seaweed_id))}
+        else{
+          ### bubble plot if have less than 3 in mean ra difference
+          
+          ## remove times wher there was none of that algae
+          df.subset = subset(df.subset, !is.na(df.subset$mean))
+          
+          ggplot(df.subset, aes(x=month, y=as.factor(quadrat_height_m), size=mean))+
+            geom_point()+
+            facet_grid(.~year, scales="free", space="free")+
+            theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+                  strip.text.y = element_text(angle = 0))+
+            ggtitle(paste0(df.subset$seaweed_id, " (", df.subset$phylum, ")"))+
+            labs(x="Sampling Month", y="Chart datum quadrat height (m)", 
+                 fill="Mean Percent Cover")+
+            scale_color_manual(values=c(unique(df.subset$phylum)))
+          } ## end of else
         
         
-    },height = 700, width = 700 )
+    } ,height = 700, width = 700 )
     
     ##### KELP REPRODUCTION - plot by user input #######
     output$reproPlot <- renderPlot({
