@@ -5,7 +5,7 @@ account: siobhanschenk
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10166742
-bundleId: 7792405
+bundleId: 10370190
 url: https://siobhanschenk.shinyapps.io/seaweed_transects_gw/
 version: 1
 asMultiple: FALSE

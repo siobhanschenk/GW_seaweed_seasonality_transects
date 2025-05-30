@@ -59,7 +59,7 @@ algae.wide = separate(data = algae.wide,
                           sep = "__")
 
 ## make all the ulva_ be ulva_sp
-algae.wide$seaweed_id=gsub("ulva_*", "ulvoid_sp__", algae.wide$seaweed_id)
+algae.wide$seaweed_id=gsub("ulv_*", "ulvoid_sp__", algae.wide$seaweed_id)
 
 ## fix Ahnfeltia fastigiata
 algae.wide$seaweed_id=gsub("ahnfeltia_sp", "ahnfeltia_fastigiata", algae.wide$seaweed_id)
@@ -71,6 +71,7 @@ algae.wide = separate(data = algae.wide,
                       into = c("seaweed_id","old_ulva"), 
                       sep = "__")
 
+
 ## remove old ulva names 
 algae.wide = algae.wide[,-c(9)]
 
@@ -78,7 +79,8 @@ algae.wide = algae.wide[,-c(9)]
 ## remove times where percent coover is 0
 algae.wide.sub = subset(algae.wide, algae.wide$percent_cover >0)
 
-algae.wide.sub$seaweed_id = gsub("ulva_sp", "ulvoid_sp", algae.wide.sub$seaweed_id)
+#algae.wide.sub$seaweed_id = gsub("ulva_sp", "ulvoid_sp", algae.wide.sub$seaweed_id)
+
 
 ## summarize data to get list of seaweeds only found once
 algae.wide.grouped = ddply(algae.wide.sub, c("seaweed_id"), 
@@ -96,8 +98,9 @@ print(once)
 algae.wide$seaweed_id=gsub("crusticorallina_sp", "crustose_coralline", algae.wide$seaweed_id)
 algae.wide$seaweed_id=gsub("lithothamnion_sp", "crustose_coralline", algae.wide$seaweed_id)
 
-## remove unkonwn seaweed
+## remove unkonwn seaweed and not detected seaweeds
 algae.wide = subset(algae.wide, algae.wide$seaweed_id!="unknown")
+
 
 ##### REMOVE SEAWEEDS ONLY FOUND ONCE AND THAT DON'T MAKE SENSE FROM THE DATASET #####
 algae.wide.ns = subset(algae.wide, !(algae.wide$seaweed_id %in% c("plocamium_sp")))
@@ -121,6 +124,37 @@ algae.heights = separate(algae.heights,
 
 
 algae.heights = algae.heights[,-c(7)]
+
+## make % cover numeric
+algae.heights$percent_cover = as.numeric(algae.heights$percent_cover)
+algae.heights$percent_cover = ifelse(is.na(algae.heights$percent_cover), 0, algae.heights$percent_cover)
+
+##### CHECK FOR DUPLICATES ######
+
+## summarize the algae
+algae.heights = ddply(algae.heights, c("transect_id", "distance_along_transect_m", "quadrat_height_m", 
+                                       "year", "month", "day", "seaweed_id", "low_tide_time_local_time", "low_tide_height_m", "phylum"),
+                      summarise,
+                      percent_cover=sum(as.numeric(percent_cover)))
+
+## quadrats
+### seaweed in quadrat
+dist_unique = ddply(algae.heights, c("transect_id", "distance_along_transect_m", "year", "month", "day", "seaweed_id"),
+                    summarise,
+                    n_detects = length(percent_cover))
+dist_unique = subset(dist_unique, dist_unique$n_detects>1)
+
+
+## month
+dup_months = ddply(algae.heights, c("transect_id", "distance_along_transect_m", "year", "month", "day"),
+                    summarise,
+                    n_detects = length(day))
+
+dup_months = ddply(dup_months, c("transect_id", "distance_along_transect_m", "year", "month"),
+                   summarise,
+                   n_detects = length(n_detects))
+
+
 
 ##### save the cleaned file #####
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
