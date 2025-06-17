@@ -10,10 +10,8 @@
 library(tidyverse)
 library(plyr)
 library(readxl)
-library(ggplot2);theme_set(theme(axis.text.x = element_text(face="bold"),
-                                   axis.text.y = element_text(size=12, face="bold"),
-                                   axis.title.x = element_text(size=15, face="bold"),
-                                   axis.title.y = element_text(size=15, face="bold")))
+library(ggplot2);theme_set(theme( axis.text = element_text(size=12),
+                                   axis.title = element_text(size=15)))
 
 ## tell R where to get the data. !!This is computer specific because it's where you downloaded the file
 setwd("C:/Users/siobh/OneDrive - The University Of British Columbia/Project - Seaweed Seasonality Transects/seaweed_seasonality_2021-09-05/git_GW_seaweed_seasonality_transects")
