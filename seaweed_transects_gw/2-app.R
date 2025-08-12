@@ -53,7 +53,7 @@ ui <- fluidPage(
                  '<p>To see how this app was built, visit <a href = "https://github.com/siobhanschenk/GW_seaweed_seasonality_transects", target="_blank">GitHub</a>.</p>',
                  
                  '<p>If you would like to take part in our seaweed survey, please email us! 
-      <i>varoonp@student.ubc.ca</i> and <i>sschenk@student.ubc.ca</i></p>'),
+      <i>varoonp@student.ubc.ca</i>, <i>evankohn@student.ubc.ca</i>, and <i>sschenk@student.ubc.ca</i></p>'),
 
             
             br(),

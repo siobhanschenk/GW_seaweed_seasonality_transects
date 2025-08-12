@@ -131,7 +131,8 @@ algae.heights$percent_cover = ifelse(is.na(algae.heights$percent_cover), 0, alga
 
 ## summarize the algae
 algae.heights = ddply(algae.heights, c("transect_id", "distance_along_transect_m", "quadrat_height_m", 
-                                       "year", "month", "day", "seaweed_id", "low_tide_time_local_time", "low_tide_height_m", "phylum"),
+                                       "year", "month", "day", "seaweed_id", "low_tide_time_local_time", 
+                                       "low_tide_height_m", "phylum"),
                       summarise,
                       percent_cover=sum(as.numeric(percent_cover)))
 
@@ -155,9 +156,11 @@ dup_months = ddply(dup_months, c("transect_id", "distance_along_transect_m", "ye
 
 
 ##### save the cleaned file #####
+## for Borealis
 write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALSE)
 write.csv(invertsub, "GW_substrate_invert_data.csv", row.names=F)
 
+## for Shiny app
 write_rds(algae.heights, "seaweed_transects_gw/Data/app_transect_data.RDS")
 repro <- read.csv("kelp_reproductive_timing.csv")
 write_rds(repro, "seaweed_transects_gw/Data/app_repro_data.RDS")
