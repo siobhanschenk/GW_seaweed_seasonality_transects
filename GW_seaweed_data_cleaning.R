@@ -161,6 +161,6 @@ write.csv(algae.heights, "GW_seaweed_transects_data_cleaned.csv", row.names=FALS
 write.csv(invertsub, "GW_substrate_invert_data.csv", row.names=F)
 
 ## for Shiny app
-write_rds(algae.heights, "seaweed_transects_gw/Data/app_transect_data.RDS")
+write_rds(algae.heights, "Shiny_app_folder/Data/app_transect_data.RDS")
 repro <- read.csv("kelp_reproductive_timing.csv")
-write_rds(repro, "seaweed_transects_gw/Data/app_repro_data.RDS")
+write_rds(repro, "Shiny_app_folder/Data/app_repro_data.RDS")

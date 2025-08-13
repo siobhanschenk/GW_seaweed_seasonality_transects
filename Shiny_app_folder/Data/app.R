@@ -5,6 +5,7 @@
 library(shiny)
 library(ggpubr)
 library(plyr)
+
 library(ggplot2); theme_set(theme_bw()+
                                 theme(panel.grid = element_blank(),
                                       strip.background = element_rect(fill="white"),
@@ -15,10 +16,9 @@ library(ggplot2); theme_set(theme_bw()+
                                       legend.title=element_text(size=12),
                                       plot.title = element_text(size=20, face="italic")))
 
-
 ## load data from Borealis https://doi.org/10.5683/SP3/IKGB6E
-algae.wide.grouped = readRDS("./Data/app_transect_data_formatted.RDS")
-reproduction = readRDS("./Data/app_repro_data_formatted.RDS")
+algae.wide.grouped = readRDS("./app_transect_data_formatted.RDS")
+reproduction = readRDS("./app_repro_data_formatted.RDS")
 
 
 ##### MAKE ELEMENTS NEEDED FOR SERVER ######
